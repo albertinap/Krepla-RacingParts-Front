@@ -1,9 +1,11 @@
 "use client"
 
 import Image from "next/image"
+import Link from "next/link"
 import { ShoppingCart, Truck } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { useCart } from "@/contexts/cart-context"
 
 const products = [
   {
@@ -106,6 +108,18 @@ function formatPrice(price: number) {
 }
 
 export function FeaturedProducts() {
+  const { addItem } = useCart()
+
+  const handleAddToCart = (product: typeof products[0]) => {
+    addItem({
+      id: product.id.toString(),
+      name: product.name,
+      price: product.price,
+      originalPrice: product.originalPrice ?? undefined,
+      image: product.image,
+    })
+  }
+
   return (
     <section className="py-8 md:py-12 px-4 bg-background">
       <div className="max-w-7xl mx-auto">
@@ -119,6 +133,7 @@ export function FeaturedProducts() {
               key={product.id}
               className="bg-card rounded-lg border border-border overflow-hidden group hover:border-primary/50 transition-colors"
             >
+              <Link href={`/productos/${product.id}`}>
               {/* Image Container */}
               <div className="relative aspect-square bg-white p-4">
                 {/* Badges */}
@@ -143,6 +158,7 @@ export function FeaturedProducts() {
                   className="object-contain p-2 group-hover:scale-105 transition-transform duration-300"
                 />
               </div>
+              </Link>
 
               {/* Product Info */}
               <div className="p-3 md:p-4">
@@ -180,7 +196,10 @@ export function FeaturedProducts() {
                 </div>
 
                 {/* Add to Cart Button */}
-                <Button className="w-full mt-3 bg-primary hover:bg-primary/90 text-primary-foreground text-sm">
+                <Button 
+                  className="w-full mt-3 bg-primary hover:bg-primary/90 text-primary-foreground text-sm"
+                  onClick={() => handleAddToCart(product)}
+                >
                   <ShoppingCart className="h-4 w-4 mr-2" />
                   Agregar
                 </Button>

@@ -2,6 +2,10 @@ import type { Metadata } from 'next'
 import { Inter, Oswald } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 import './globals.css'
+import { CartProvider } from '@/contexts/cart-context'
+import { AuthProvider } from '@/contexts/auth-context'
+import { ShoppingCart } from '@/components/shopping-cart'
+import { LoginModal } from '@/components/login-modal'
 
 const inter = Inter({ 
   subsets: ["latin"],
@@ -44,7 +48,13 @@ export default function RootLayout({
   return (
     <html lang="es">
       <body className={`${inter.variable} ${oswald.variable} font-sans antialiased`}>
-        {children}
+        <CartProvider>
+          <AuthProvider>
+            {children}
+            <ShoppingCart />
+            <LoginModal />
+          </AuthProvider>
+        </CartProvider>
         <Analytics />
       </body>
     </html>

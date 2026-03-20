@@ -4,8 +4,13 @@ import { Search, HelpCircle, User, ShoppingCart } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
+import { useCart } from "@/contexts/cart-context"
+import { useAuth } from "@/contexts/auth-context"
 
 export function Header() {
+  const { openCart, itemCount } = useCart()
+  const { openLogin, user } = useAuth()
+
   return (
     <header className="bg-background border-b border-border py-4 px-4">
       <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
@@ -44,17 +49,23 @@ export function Header() {
             <HelpCircle className="h-5 w-5 md:h-6 md:w-6" />
             <span className="text-xs hidden md:block">Ayuda</span>
           </Link>
-          <Link href="#" className="flex flex-col items-center text-muted-foreground hover:text-foreground transition-colors">
+          <button 
+            onClick={openLogin}
+            className="flex flex-col items-center text-muted-foreground hover:text-foreground transition-colors"
+          >
             <User className="h-5 w-5 md:h-6 md:w-6" />
-            <span className="text-xs hidden md:block">Mi cuenta</span>
-          </Link>
-          <Link href="#" className="flex flex-col items-center text-muted-foreground hover:text-foreground transition-colors relative">
+            <span className="text-xs hidden md:block">{user ? user.name : "Mi cuenta"}</span>
+          </button>
+          <button 
+            onClick={openCart}
+            className="flex flex-col items-center text-muted-foreground hover:text-foreground transition-colors relative"
+          >
             <ShoppingCart className="h-5 w-5 md:h-6 md:w-6" />
             <span className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-xs rounded-full h-4 w-4 flex items-center justify-center">
-              0
+              {itemCount}
             </span>
             <span className="text-xs hidden md:block">Mi carrito</span>
-          </Link>
+          </button>
         </div>
       </div>
 
