@@ -423,8 +423,8 @@ export default function CheckoutPage() {
                       <h3 className="text-[15px] font-semibold text-foreground mb-2">Dirección del local</h3>
                       <p className="text-[15px] text-muted-foreground">
                         Krepla Racing Parts<br />
-                        Av. San Martín 1234<br />
-                        Morón, Buenos Aires (B1708)<br />
+                        Cuba 1348<br />
+                        Bahía Blanca, Buenos Aires<br />
                         Lunes a Viernes de 9:00 a 18:00
                       </p>
                     </div>
@@ -599,7 +599,7 @@ export default function CheckoutPage() {
                       <p className="text-[15px] text-muted-foreground">
                         {selectedShipping?.name} - {selectedShipping?.days}<br />
                         {isRetiroLocal ? (
-                          <>Retiro en: Av. San Martín 1234, Morón</>
+                          <>Retiro en: Cuba 1348, Bahía Blanca</>
                         ) : (
                           <>
                             {shippingAddress.street} {shippingAddress.number}

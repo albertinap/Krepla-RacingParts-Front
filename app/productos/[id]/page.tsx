@@ -40,9 +40,11 @@ export default function ProductPage({ params }: ProductPageProps) {
   const { addItem } = useCart()
 
   useEffect(() => {
-    medusa.store.product.list({ handle: id })
+    medusa.store.product.list
+    ({ handle: id, region_id: "reg_01KMGSX0FJ4G6Z9HMAAT2K4GMR" } as any)
       .then(({ products }) => {
-        if (products.length > 0) setProduct(products[0])
+        const found = products.find((p: any) => p.handle === id)
+        if (found) setProduct(found)
         setIsLoading(false)
       })
       .catch(() => setIsLoading(false))

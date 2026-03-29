@@ -6,20 +6,20 @@ import Link from "next/link"
 const featuredCategories = [
   {
     name: "Escapes",
-    image: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=300&fit=crop",
-    href: "/productos/escapes",
+    image: "https://hondamaquina.com/imagenes/Como-funciona-el-tubo-de-escape-de-una-moto.jpg",
+    href: "/productos/categoria/escapes",
     description: "Performance y sonido",
   },
   {
-    name: "Cascos",
-    image: "https://images.unsplash.com/photo-1617727553252-65863c156eb0?w=400&h=300&fit=crop",
-    href: "/productos/cascos",
+    name: "Competición y Potenciación",
+    image: "https://media.triumphmotorcycles.co.uk/image/upload/f_auto/q_auto:eco/sitecoremedialibrary/media-library/images/central%20marketing%20team/for%20the%20ride/racing/2024%20racing%20update/landing%20page/ftr-racing-world-supersport-card-1000x6509.png",
+    href: "/productos/categoria/competicion-y-potenciacion",
     description: "Seguridad certificada",
   },
   {
     name: "Accesorios",
-    image: "https://images.unsplash.com/photo-1449426468159-d96dbf08f19f?w=400&h=300&fit=crop",
-    href: "/productos/accesorios",
+    image: "https://allmotorsgroup.com.ar/wp-content/uploads/2024/10/Untitled-design-2-jpg.webp",
+    href: "/productos/categoria/accesorios",
     description: "Personaliza tu moto",
   },
 ]

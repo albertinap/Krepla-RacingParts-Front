@@ -194,7 +194,7 @@ export function ShoppingCart() {
                       <RadioGroupItem value="pickup-store" id="pickup-store" className="mt-1" />
                       <div className="flex-1">
                         <Label htmlFor="pickup-store" className="font-medium cursor-pointer">
-                          Krepla Racing Parts - MITRE 755, BASAVILBASO, ENTRE RIOS (CP:3170)
+                          Krepla Racing Parts - CUBA 1348, BAHÍA BLANCA, BUENOS AIRES (CP:8000)
                         </Label>
                       </div>
                       <span className="font-semibold text-primary">Gratis</span>

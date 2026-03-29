@@ -18,15 +18,15 @@ export function Header() {
         {/* Logo */}
 
         <Link href="/" className="flex-shrink-0">
-        <Image
-          src="/logo.png"
-          alt="Krepla Racing Parts"
-          width={150}
-          height={50}
-          className="object-contain"
-          priority
-        />
-      </Link>
+          <Image
+            src="/logo.png"
+            alt="Krepla Racing Parts"
+            width={150}
+            height={50}
+            className="h-auto w-[150px] object-contain"
+            priority
+          />
+        </Link>
 
         {/* Search Bar */}
         <div className="flex-1 max-w-2xl hidden sm:block">

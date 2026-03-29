@@ -23,6 +23,7 @@ import { Header } from "@/components/header"
 import { Navigation } from "@/components/navigation"
 import { Footer } from "@/components/footer"
 import { useCart } from "@/contexts/cart-context"
+import { CategorySidebar } from "@/components/category-sidebar"
 
 interface Product {
   id: string
@@ -33,6 +34,7 @@ interface Product {
   brand: string
   createdAt: Date
   salesCount: number
+  colors: string[]
 }
 
 interface CategoryPageProps {
@@ -41,14 +43,12 @@ interface CategoryPageProps {
 
 const categoryNames: Record<string, string> = {
   escapes: "Escapes",
-  cascos: "Cascos",
   transmision: "Transmisión",
   mantenimiento: "Mantenimiento",
   guardabarros: "Guardabarros",
-  "rampas-y-zunchos": "Rampas y Zunchos",
   calcos: "Calcos",
   "manubrios-y-accesorios": "Manubrios y Accesorios",
-  "kit-plasticos": "Kit Plásticos",
+  "competicion-y-potenciacion": "Competición y Potenciación",
 }
 
 type SortOption = "best-sellers" | "price-asc" | "price-desc" | "a-z" | "z-a" | "newest"
@@ -83,7 +83,7 @@ function ProductCard({ product, categoria }: { product: Product; categoria: stri
 
   return (
     <div className="bg-card rounded-lg border border-border overflow-hidden group hover:border-primary/50 transition-colors">
-      <Link href={`/productos/categoria/${categoria}/${product.handle}`}>
+      <Link href={`/productos/${product.handle}`}>
         <div className="relative aspect-square bg-white p-4 overflow-hidden">
           {freeShipping && (
             <Badge className="absolute top-3 left-3 z-10 bg-green-600 hover:bg-green-600 text-white text-xs px-2 py-1 flex items-center gap-1">
@@ -105,7 +105,7 @@ function ProductCard({ product, categoria }: { product: Product; categoria: stri
         </div>
       </Link>
       <div className="p-4">
-        <Link href={`/productos/categoria/${categoria}/${product.handle}`}>
+        <Link href={`/productos/${product.handle}`}>
           <h3 className="text-[15px] font-medium text-foreground line-clamp-2 hover:text-primary transition-colors leading-snug">
             {product.name}
           </h3>
@@ -117,6 +117,15 @@ function ProductCard({ product, categoria }: { product: Product; categoria: stri
         <p className="text-sm text-muted-foreground mt-1">
           3 cuotas sin interés de {formatPrice(installmentPrice)}
         </p>
+        {product.colors.length > 0 && (
+          <div className="flex gap-1 mt-2">
+            {product.colors.map((color) => (
+              <span key={color} className="text-xs text-muted-foreground border border-border rounded px-2 py-0.5">
+                {color}
+              </span>
+            ))}
+          </div>
+        )}
         <Button
           className="w-full mt-4 bg-primary hover:bg-primary/90 text-primary-foreground text-[15px]"
           onClick={() => addItem({ id: product.id, name: product.name, price: product.price, image: product.image })}
@@ -216,36 +225,50 @@ export default function CategoryPage({ params }: CategoryPageProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
   useEffect(() => {
-    medusa.store.product.list({
-      category_handle: [categoria],
-      fields: "*variants.prices,*variants.inventory_quantity",
-    }).then(({ products: medusaProducts }) => {
-      const mapped = medusaProducts.map((p: any) => ({
-        id: p.id,
-        name: p.title,
-        handle: p.handle,
-        price: p.variants?.[0]?.calculated_price?.calculated_amount ?? 0,
-        image: p.thumbnail ?? "/placeholder.svg?height=300&width=300",
-        brand: p.collection?.title ?? "Sin marca",
-        createdAt: new Date(p.created_at),
-        salesCount: 0,
-      }))
-      setProducts(mapped)
-
-      const uniqueBrands = [...new Set(mapped.map((p: any) => p.brand).filter((b: string) => b !== "Sin marca"))]
-      setBrands(uniqueBrands as string[])
-
-      if (mapped.length > 0) {
-        const prices = mapped.map((p: any) => p.price)
-        const min = Math.min(...prices)
-        const max = Math.max(...prices)
-        setMinPrice(min)
-        setMaxPrice(max)
-        setPriceRange([min, max])
-      }
-
-      setIsLoading(false)
-    }).catch(() => setIsLoading(false))
+    // Paso 1: buscar el ID de la categoría por su handle
+    medusa.store.category.list({ handle: categoria })
+      .then(({ product_categories }) => {
+        if (!product_categories.length) {
+          setIsLoading(false)
+          return
+        }
+        const categoryId = product_categories[0].id
+  
+        // Paso 2: buscar productos por el ID de la categoría
+        return medusa.store.product.list({
+          category_id: [categoryId], 
+          region_id: "reg_01KMGSX0FJ4G6Z9HMAAT2K4GMR",                   
+        }) as any;
+      })
+      .then((result: any) => {
+        if (!result) return
+        const { products: medusaProducts } = result
+        console.log("Primer producto:", JSON.stringify(medusaProducts[0], null, 2))
+        const mapped = medusaProducts.map((p: any) => ({
+          id: p.id,
+          name: p.title,
+          handle: p.handle,
+          price: p.variants?.[0]?.calculated_price?.calculated_amount ?? 0,
+          image: p.thumbnail ?? "/placeholder.svg?height=300&width=300",
+          brand: p.collection?.title ?? "Sin marca",
+          createdAt: new Date(p.created_at),
+          salesCount: 0,
+          colors: p.options
+            ?.find((o: any) => o.title === "Color")
+            ?.values?.map((v: any) => v.value) ?? [],
+        }))
+        setProducts(mapped)
+        const uniqueBrands = [...new Set(mapped.map((p: any) => p.brand).filter((b: string) => b !== "Sin marca"))]
+        setBrands(uniqueBrands as string[])
+        if (mapped.length > 0) {
+          const prices = mapped.map((p: any) => p.price)
+          setMinPrice(Math.min(...prices))
+          setMaxPrice(Math.max(...prices))
+          setPriceRange([Math.min(...prices), Math.max(...prices)])
+        }
+        setIsLoading(false)
+      })
+      .catch(() => setIsLoading(false))
   }, [categoria])
 
   const filteredProducts = useMemo(() => {
@@ -279,6 +302,7 @@ export default function CategoryPage({ params }: CategoryPageProps) {
       <AnnouncementBar />
       <Header />
       <Navigation onOpenSidebar={() => setSidebarOpen(true)} />
+      <CategorySidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       
       <main className="flex-1">
         <div className="max-w-7xl mx-auto px-4 py-6">

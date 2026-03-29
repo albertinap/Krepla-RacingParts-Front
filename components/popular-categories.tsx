@@ -1,18 +1,16 @@
 "use client"
 
-import { Bike, HardHat, Cog, Wrench, Shield, Grip, Package, Sparkles, Zap } from "lucide-react"
+import { Bike, Cog, Wrench, Shield, Sticker, Sparkles, Zap } from "lucide-react"
 import Link from "next/link"
 
 const popularCategories = [
-  { name: "Escapes", icon: Bike, href: "/productos/escapes" },
-  { name: "Cascos", icon: HardHat, href: "/productos/cascos" },
-  { name: "Transmisión", icon: Cog, href: "/productos/transmision" },
-  { name: "Mantenimiento", icon: Wrench, href: "/productos/mantenimiento" },
-  { name: "Guardabarros", icon: Shield, href: "/productos/guardabarros" },
-  { name: "Manubrios", icon: Grip, href: "/productos/manubrios" },
-  { name: "Kit Plásticos", icon: Package, href: "/productos/kit-plasticos" },
-  { name: "Accesorios", icon: Sparkles, href: "/productos/accesorios" },
-  { name: "Eléctricos", icon: Zap, href: "/productos/electricos" },
+  { name: "Escapes", icon: Bike, href: "/productos/categoria/escapes" },
+  { name: "Transmisión", icon: Cog, href: "/productos/categoria/transmision" },
+  { name: "Mantenimiento", icon: Wrench, href: "/productos/categoria/mantenimiento" },
+  { name: "Guardabarros", icon: Shield, href: "/productos/categoria/guardabarros" },
+  { name: "Calcos", icon: Sticker, href: "/productos/categoria/kit-plasticos" },
+  { name: "Manubrios y Accesorios", icon: Sparkles, href: "/productos/categoria/manubrios-y-accesorios" },  
+  { name: "Competición y Potenciación", icon: Zap, href: "/productos/categoria/competicion-y-potenciacion" },
 ]
 
 export function PopularCategories() {

@@ -70,7 +70,7 @@ export function Navigation({ onOpenSidebar }: NavigationProps) {
                 {categories.map((category) => (
                   <DropdownMenuItem key={category.id} asChild>
                     <Link
-                      href={`/productos/${category.handle}`}
+                      href={`/productos/categoria/${category.handle}`}
                       className="text-foreground hover:text-primary"
                     >
                       {category.name}
@@ -116,7 +116,7 @@ export function Navigation({ onOpenSidebar }: NavigationProps) {
               {categories.map((category) => (
                 <Link
                   key={category.id}
-                  href={`/productos/${category.handle}`}
+                  href={`/productos/categoria/${category.handle}`}
                   className="text-sm text-foreground hover:text-primary transition-colors py-2 pl-4"
                   onClick={() => setMobileMenuOpen(false)}
                 >

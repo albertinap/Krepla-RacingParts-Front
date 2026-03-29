@@ -1,21 +1,19 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { X, ChevronRight, Bike, HardHat, Cog, Wrench, Shield, Ruler, Sticker, Grip, Package } from "lucide-react"
+import { X, ChevronRight, Bike, HardHat, Cog, Wrench, Shield, Ruler, Sticker, Package, Sparkles, Zap } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { medusa } from "@/lib/medusa"
 
 const categoryIcons: Record<string, any> = {
   "Escapes": Bike,
-  "Cascos": HardHat,
   "Transmisión": Cog,
   "Mantenimiento": Wrench,
   "Guardabarros": Shield,
-  "Rampas y Zunchos": Ruler,
   "Calcos": Sticker,
-  "Manubrios y Accesorios": Grip,
-  "Kit Plásticos": Package,
+  "Manubrios y Accesorios": Sparkles,
+  "Competición y Potenciación": Zap,
 }
 
 interface CategorySidebarProps {
@@ -54,7 +52,7 @@ export function CategorySidebar({ isOpen, onClose }: CategorySidebarProps) {
             return (
               <Link
                 key={category.id}
-                href={`/productos/${category.handle}`}
+                href={`/productos/categoria/${category.handle}`}
                 className="flex items-center justify-between px-4 py-3 text-sidebar-foreground hover:bg-sidebar-accent transition-colors"
                 onClick={onClose}
               >
