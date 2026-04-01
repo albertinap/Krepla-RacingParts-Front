@@ -1,10 +1,10 @@
 "use client"
 
-import { X, Minus, Plus, Trash2, Truck, MapPin, Store } from "lucide-react"
+import { X, Minus, Plus, Trash2, Truck, MapPin, Store, Edit2, Check } from "lucide-react"
 import Image from "next/image"
 import { useCart } from "@/contexts/cart-context"
 import { Button } from "@/components/ui/button"
-import { Progress } from "@/components/ui/progress"
+import { Input } from "@/components/ui/input"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Label } from "@/components/ui/label"
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet"
@@ -12,6 +12,34 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 
 const FREE_SHIPPING_THRESHOLD = 150000
+
+const SHIPPING_OPTIONS = [
+  {
+    id: "andreani",
+    name: "Andreani",
+    description: "Envío a domicilio",
+    icon: Truck,
+  },
+  {
+    id: "via-cargo",
+    name: "Vía Cargo",
+    description: "Envío a domicilio",
+    icon: Store,
+  },
+  {
+    id: "correo-argentino",
+    name: "Correo Argentino",
+    description: "Envío a domicilio",
+    icon: Truck,
+  },
+  {
+    id: "retiro-local",
+    name: "Retiro en local",
+    description: "CUBA 1348, Bahía Blanca (CP: 8000)",
+    icon: MapPin,
+    cost: 0,
+  },
+]
 
 function formatPrice(price: number) {
   return new Intl.NumberFormat("es-AR", {
@@ -22,16 +50,20 @@ function formatPrice(price: number) {
 }
 
 export function ShoppingCart() {
-  const { items, isOpen, closeCart, updateQuantity, removeItem, total } = useCart()
-  const [shippingMethod, setShippingMethod] = useState("delivery")
-  const [deliveryOption, setDeliveryOption] = useState("nube")
-
-  const shippingCost = shippingMethod === "pickup-store" ? 0 : 
-    shippingMethod === "pickup-point" ? 5523 : 8431
-  const progressToFreeShipping = Math.min((total / FREE_SHIPPING_THRESHOLD) * 100, 100)
-  const amountForFreeShipping = Math.max(FREE_SHIPPING_THRESHOLD - total, 0)
-  const discountedTotal = (total + shippingCost) * 0.84
+  const { items, isOpen, closeCart, updateQuantity, removeItem, total, postalCode, setPostalCode } = useCart()
+  const [shippingMethod, setShippingMethod] = useState("andreani")
+  const [editingPostalCode, setEditingPostalCode] = useState(false)
+  const [tempPostalCode, setTempPostalCode] = useState(postalCode)
   const router = useRouter()
+
+  const selectedShipping = SHIPPING_OPTIONS.find((o) => o.id === shippingMethod)
+  const shippingCost = shippingMethod === "retiro-local" ? 0 : null
+  const discountedTotal = (total + (shippingCost ?? 0)) * 0.84
+
+  const handleSavePostalCode = () => {
+    setPostalCode(tempPostalCode)
+    setEditingPostalCode(false)
+  }
 
   return (
     <Sheet open={isOpen} onOpenChange={closeCart}>
@@ -53,160 +85,108 @@ export function ShoppingCart() {
               {items.map((item) => (
                 <div key={item.id} className="flex gap-3 p-3 bg-secondary rounded-lg">
                   <div className="relative w-16 h-16 bg-muted rounded overflow-hidden flex-shrink-0">
-                    <Image
-                      src={item.image}
-                      alt={item.name}
-                      fill
-                      className="object-contain"
-                    />
+                    <Image src={item.image} alt={item.name} fill className="object-contain" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <h3 className="text-sm font-medium truncate">{item.name}</h3>
                     <div className="flex items-center gap-2 mt-2">
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        className="h-7 w-7"
-                        onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                      >
+                      <Button variant="outline" size="icon" className="h-7 w-7"
+                        onClick={() => updateQuantity(item.id, item.quantity - 1)}>
                         <Minus className="h-3 w-3" />
                       </Button>
                       <span className="w-8 text-center text-sm">{item.quantity}</span>
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        className="h-7 w-7"
-                        onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                      >
+                      <Button variant="outline" size="icon" className="h-7 w-7"
+                        onClick={() => updateQuantity(item.id, item.quantity + 1)}>
                         <Plus className="h-3 w-3" />
                       </Button>
                     </div>
                   </div>
                   <div className="flex flex-col items-end gap-2">
                     <span className="font-semibold text-sm">{formatPrice(item.price * item.quantity)}</span>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-7 w-7 text-muted-foreground hover:text-destructive"
-                      onClick={() => removeItem(item.id)}
-                    >
+                    <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-destructive"
+                      onClick={() => removeItem(item.id)}>
                       <Trash2 className="h-4 w-4" />
                     </Button>
                   </div>
                 </div>
               ))}
-            </div>
-          )}
 
-          {items.length > 0 && (
-            <>
-              {/* Free Shipping Progress */}
-              <div className="mt-6 p-3 bg-secondary rounded-lg">
-                <div className="flex items-center gap-2 text-sm text-primary mb-2">
-                  <Truck className="h-4 w-4" />
-                  {progressToFreeShipping >= 100 ? (
-                    <span className="font-medium">Envío gratis superando los {formatPrice(FREE_SHIPPING_THRESHOLD)}</span>
-                  ) : (
-                    <span>Agregá {formatPrice(amountForFreeShipping)} más para envío gratis</span>
-                  )}
-                </div>
-                <Progress value={progressToFreeShipping} className="h-2" />
+              {/* Subtotal */}
+              <div className="flex items-center justify-between text-sm pt-2">
+                <span className="text-muted-foreground">Subtotal (sin envío):</span>
+                <span className="font-semibold">{formatPrice(total)}</span>
               </div>
 
-              {/* Shipping Options */}
-              <div className="mt-6 space-y-4">
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">Subtotal (sin envío):</span>
-                  <span className="font-semibold">{formatPrice(total)}</span>
-                </div>
-
-                <div className="space-y-3">
-                  <div className="text-sm text-muted-foreground">Entregas para el CP: <strong className="text-foreground">1900</strong></div>
-                  <Button variant="outline" size="sm">CAMBIAR CP</Button>
-                </div>
-
-                {/* Delivery Options */}
-                <div className="space-y-3">
-                  <div className="flex items-center gap-2 text-sm">
-                    <Truck className="h-4 w-4" />
-                    <span>Envío a domicilio</span>
+              {/* Código postal */}
+              <div className="p-3 bg-secondary rounded-lg space-y-2">
+                <p className="text-sm text-muted-foreground">
+                  Calculando envío para CP:
+                </p>
+                {editingPostalCode ? (
+                  <div className="flex gap-2">
+                    <Input
+                      value={tempPostalCode}
+                      onChange={(e) => setTempPostalCode(e.target.value)}
+                      className="h-8 text-sm"
+                      maxLength={8}
+                      onKeyDown={(e) => e.key === "Enter" && handleSavePostalCode()}
+                      autoFocus
+                    />
+                    <Button size="icon" className="h-8 w-8" onClick={handleSavePostalCode}>
+                      <Check className="h-4 w-4" />
+                    </Button>
                   </div>
-                  
-                  <RadioGroup value={deliveryOption} onValueChange={setDeliveryOption} className="space-y-2">
-                    <div 
-                      className={`flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
-                        deliveryOption === "nube" ? "border-primary bg-primary/5" : "border-border"
-                      }`}
-                      onClick={() => { setShippingMethod("delivery"); setDeliveryOption("nube") }}
-                    >
-                      <RadioGroupItem value="nube" id="nube" className="mt-1" />
-                      <div className="flex-1">
-                        <Label htmlFor="nube" className="font-medium cursor-pointer">
-                          Envío Nube - Correo Argentino Clásico a domicilio
-                        </Label>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          Llega entre el martes 24/03 y el lunes 30/03
-                        </p>
-                      </div>
-                      <span className="font-semibold">{formatPrice(8431)}</span>
-                    </div>
-                  </RadioGroup>
-
-                  <div className="flex items-center gap-2 text-sm mt-4">
-                    <Store className="h-4 w-4" />
-                    <span>VIA CARGO - SE RETIRA Y PAGA EN SUCURSAL</span>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <span className="font-semibold text-foreground">{postalCode}</span>
+                    <Button variant="ghost" size="icon" className="h-6 w-6"
+                      onClick={() => { setTempPostalCode(postalCode); setEditingPostalCode(true) }}>
+                      <Edit2 className="h-3 w-3" />
+                    </Button>
                   </div>
+                )}
+              </div>
 
-                  <div className="flex items-center gap-2 text-sm mt-4">
-                    <MapPin className="h-4 w-4" />
-                    <span>Retirar por</span>
-                  </div>
-
-                  <RadioGroup value={shippingMethod} onValueChange={setShippingMethod} className="space-y-2">
-                    <div 
-                      className={`flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
-                        shippingMethod === "pickup-point" ? "border-primary bg-primary/5" : "border-border"
-                      }`}
-                      onClick={() => setShippingMethod("pickup-point")}
-                    >
-                      <RadioGroupItem value="pickup-point" id="pickup-point" className="mt-1" />
-                      <div className="flex-1">
-                        <Label htmlFor="pickup-point" className="font-medium cursor-pointer">Punto de retiro</Label>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          Retiras entre el martes 24/03 y el lunes 30/03
-                        </p>
-                        <button className="text-xs text-primary mt-1">Ver direcciones</button>
+              {/* Opciones de envío */}
+              <div className="space-y-2">
+                <p className="text-sm font-medium text-foreground">Método de envío:</p>
+                <RadioGroup value={shippingMethod} onValueChange={setShippingMethod} className="space-y-2">
+                  {SHIPPING_OPTIONS.map((option) => {
+                    const Icon = option.icon
+                    return (
+                      <div
+                        key={option.id}
+                        className={`flex items-center justify-between p-3 rounded-lg border cursor-pointer transition-colors ${
+                          shippingMethod === option.id ? "border-primary bg-primary/5" : "border-border"
+                        }`}
+                        onClick={() => setShippingMethod(option.id)}
+                      >
+                        <div className="flex items-center gap-3">
+                          <RadioGroupItem value={option.id} id={option.id} />
+                          <Icon className="h-4 w-4 text-muted-foreground" />
+                          <div>
+                            <Label htmlFor={option.id} className="font-medium cursor-pointer text-sm">
+                              {option.name}
+                            </Label>
+                            <p className="text-xs text-muted-foreground">{option.description}</p>
+                          </div>
+                        </div>
+                        <span className="text-sm font-medium text-muted-foreground">
+                          {option.id === "retiro-local" ? (
+                            <span className="text-primary font-semibold">Gratis</span>
+                          ) : (
+                            "A calcular"
+                          )}
+                        </span>
                       </div>
-                      <span className="font-semibold">{formatPrice(5523)}</span>
-                    </div>
-
-                    <div className="flex items-center gap-2 text-sm mt-4">
-                      <Store className="h-4 w-4" />
-                      <span>Nuestro local</span>
-                    </div>
-
-                    <div 
-                      className={`flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
-                        shippingMethod === "pickup-store" ? "border-primary bg-primary/5" : "border-border"
-                      }`}
-                      onClick={() => setShippingMethod("pickup-store")}
-                    >
-                      <RadioGroupItem value="pickup-store" id="pickup-store" className="mt-1" />
-                      <div className="flex-1">
-                        <Label htmlFor="pickup-store" className="font-medium cursor-pointer">
-                          Krepla Racing Parts - CUBA 1348, BAHÍA BLANCA, BUENOS AIRES (CP:8000)
-                        </Label>
-                      </div>
-                      <span className="font-semibold text-primary">Gratis</span>
-                    </div>
-                  </RadioGroup>
-                </div>
-
+                    )
+                  })}
+                </RadioGroup>
                 <p className="text-xs text-muted-foreground">
                   El tiempo de entrega <strong className="text-foreground">no considera feriados</strong>.
                 </p>
               </div>
-            </>
+            </div>
           )}
         </div>
 
@@ -216,7 +196,12 @@ export function ShoppingCart() {
             <div className="space-y-2">
               <div className="flex items-center justify-between text-lg font-semibold">
                 <span>Total:</span>
-                <span>{formatPrice(total + shippingCost)}</span>
+                <span>
+                  {shippingCost === null
+                    ? `${formatPrice(total)} + envío`
+                    : formatPrice(total + shippingCost)
+                  }
+                </span>
               </div>
               <div className="text-sm text-primary">
                 O {formatPrice(discountedTotal)} con -16% DESCUENTO en Transferencia
@@ -233,7 +218,7 @@ export function ShoppingCart() {
             >
               INICIAR COMPRA
             </Button>
-            <button 
+            <button
               onClick={closeCart}
               className="w-full text-center text-sm text-muted-foreground hover:text-foreground transition-colors"
             >

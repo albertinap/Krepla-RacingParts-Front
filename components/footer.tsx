@@ -1,6 +1,7 @@
 "use client"
 
 import Link from "next/link"
+import Image from "next/image"
 
 function SocialIconInstagram({ className }: { className?: string }) {
   return (
@@ -30,12 +31,16 @@ export function Footer() {
           {/* Logo & Description */}
           <div className="col-span-1 sm:col-span-2 md:col-span-1">
             <div className="mb-4">
-              <span className="text-2xl font-bold text-foreground" style={{ fontFamily: 'var(--font-oswald)' }}>
-                KREPLA
-              </span>
-              <span className="text-primary text-sm italic ml-1" style={{ fontFamily: 'var(--font-oswald)' }}>
-                Racing Parts
-              </span>
+            <Link href="/" className="flex-shrink-0">
+              <Image
+                src="/logo.png"
+                alt="Krepla Racing Parts"
+                width={150}
+                height={50}
+                className="h-auto w-[150px] object-contain"
+                priority
+              />
+            </Link>
             </div>
             <p className="text-sm text-muted-foreground mb-4">
               Tu tienda online de repuestos y accesorios para motos. Distribuidores oficiales de las mejores marcas.
@@ -110,7 +115,7 @@ export function Footer() {
           <div>
             <h4 className="font-semibold text-foreground mb-4">Contacto</h4>
             <ul className="space-y-2 text-sm text-muted-foreground">
-              <li>Bahía Blanca,Buenos Aires, Argentina</li>
+              <li>Bahía Blanca, Buenos Aires, Argentina</li>
               <li>Tel: 2915132747</li>
               <li>krepla.racingparts@gmail.com</li>
               <li className="pt-2">

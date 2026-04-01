@@ -2,5 +2,5 @@ import Medusa from "@medusajs/js-sdk"
 
 export const medusa = new Medusa({
   baseUrl: "http://localhost:9000",
-  publishableKey: "pk_35d8c7aeb912250fce64c0d60bc27c7e2ce6a271f3a35c5890abdd322604d85b",
+  publishableKey: "pk_9fb79533c0b334820e6296a8cb165fe05650abb75be4d87f944d76fc77d28910",
 })

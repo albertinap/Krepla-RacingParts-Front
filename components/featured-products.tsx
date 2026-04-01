@@ -10,6 +10,8 @@ import { useCart } from "@/contexts/cart-context"
 import { medusa } from "@/lib/medusa"
 import { useState, useEffect } from "react"
 
+const DEFAULT_REGION_ID = process.env.NEXT_PUBLIC_DEFAULT_REGION
+
 function formatPrice(price: number) {
   return new Intl.NumberFormat('es-AR', {
     style: 'currency',
@@ -41,7 +43,7 @@ export function FeaturedProducts() {
   useEffect(() => {
     medusa.store.product.list({
       limit: 8,
-      region_id: "reg_01KMGSX0FJ4G6Z9HMAAT2K4GMR",
+      region_id: DEFAULT_REGION_ID,
     } as any)
       .then(({ products: medusaProducts }) => {
         setProducts(medusaProducts)
@@ -76,14 +78,7 @@ export function FeaturedProducts() {
                   >
                     <Link href={`/productos/${product.handle}`}>
                       <div className="relative aspect-square bg-white p-4">
-                        <div className="absolute top-2 left-2 z-10 flex flex-col gap-1">
-                          {freeShipping && (
-                            <Badge className="bg-primary hover:bg-primary text-primary-foreground text-xs flex items-center gap-1">
-                              <Truck className="h-3 w-3" />
-                              ENVÍO GRATIS
-                            </Badge>
-                          )}
-                        </div>
+                        
                         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                           <span className="text-6xl font-bold text-gray-200/30 rotate-[-30deg] select-none tracking-widest">
                             KREPLA
@@ -122,7 +117,8 @@ export function FeaturedProducts() {
                           id: product.id,
                           name: product.title,
                           price,
-                          image,
+                          image,                          
+                          variantId: product.variants?.[0]?.id                       
                         })}
                       >
                         <ShoppingCart className="h-4 w-4 mr-2" />

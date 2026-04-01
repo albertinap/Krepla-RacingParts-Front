@@ -1,6 +1,6 @@
 "use client"
 
-import { Truck, CreditCard, Percent, MessageCircle } from "lucide-react"
+import { Truck, CreditCard, Percent, Camera } from "lucide-react"
 
 const features = [
   {
@@ -11,7 +11,7 @@ const features = [
   {
     icon: CreditCard,
     title: "Tarjeta de Credito",
-    description: "3 Cuotas SIN INTERES!",
+    description: "3 Cuotas SIN INTERÉS!",
   },
   {
     icon: Percent,
@@ -19,9 +19,9 @@ const features = [
     description: "con Transferencias",
   },
   {
-    icon: MessageCircle,
-    title: "WhatsApp",
-    description: "Comunicate con nosotros!",
+    icon: Camera,
+    title: "Instagram",
+    description: "Seguinos para estar al tanto de todos los ingresos!",
   },
 ]
 

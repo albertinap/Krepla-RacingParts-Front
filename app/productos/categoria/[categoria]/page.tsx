@@ -25,18 +25,6 @@ import { Footer } from "@/components/footer"
 import { useCart } from "@/contexts/cart-context"
 import { CategorySidebar } from "@/components/category-sidebar"
 
-interface Product {
-  id: string
-  name: string
-  handle: string
-  price: number
-  image: string
-  brand: string
-  createdAt: Date
-  salesCount: number
-  colors: string[]
-}
-
 interface CategoryPageProps {
   params: Promise<{ categoria: string }>
 }
@@ -51,7 +39,7 @@ const categoryNames: Record<string, string> = {
   "competicion-y-potenciacion": "Competición y Potenciación",
 }
 
-type SortOption = "best-sellers" | "price-asc" | "price-desc" | "a-z" | "z-a" | "newest"
+type SortOption = "price-asc" | "price-desc" | "a-z" | "z-a" | "newest"
 
 function formatPrice(price: number): string {
   return new Intl.NumberFormat("es-AR", {
@@ -75,7 +63,7 @@ function ProductCardSkeleton() {
   )
 }
 
-function ProductCard({ product, categoria }: { product: Product; categoria: string }) {
+function ProductCard({ product, categoria }: { product: any; categoria: string }) {
   const { addItem } = useCart()
   const freeShipping = product.price >= 150000
   const transferPrice = product.price * 0.84
@@ -84,13 +72,7 @@ function ProductCard({ product, categoria }: { product: Product; categoria: stri
   return (
     <div className="bg-card rounded-lg border border-border overflow-hidden group hover:border-primary/50 transition-colors">
       <Link href={`/productos/${product.handle}`}>
-        <div className="relative aspect-square bg-white p-4 overflow-hidden">
-          {freeShipping && (
-            <Badge className="absolute top-3 left-3 z-10 bg-green-600 hover:bg-green-600 text-white text-xs px-2 py-1 flex items-center gap-1">
-              <Truck className="h-3 w-3" />
-              ENVIO GRATIS
-            </Badge>
-          )}
+        <div className="relative aspect-square bg-white p-4 overflow-hidden">          
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
             <span className="text-6xl font-bold text-gray-200/30 rotate-[-30deg] select-none tracking-widest">
               KREPLA
@@ -119,7 +101,7 @@ function ProductCard({ product, categoria }: { product: Product; categoria: stri
         </p>
         {product.colors.length > 0 && (
           <div className="flex gap-1 mt-2">
-            {product.colors.map((color) => (
+            {product.colors?.map((color: string) => (
               <span key={color} className="text-xs text-muted-foreground border border-border rounded px-2 py-0.5">
                 {color}
               </span>
@@ -128,7 +110,13 @@ function ProductCard({ product, categoria }: { product: Product; categoria: stri
         )}
         <Button
           className="w-full mt-4 bg-primary hover:bg-primary/90 text-primary-foreground text-[15px]"
-          onClick={() => addItem({ id: product.id, name: product.name, price: product.price, image: product.image })}
+          onClick={() => addItem({
+            id: product.id, 
+            name: product.name, 
+            price: product.price, 
+            image: product.image,            
+            variantId: product.variants?.[0]?.id,
+          })}
         >
           Agregar al carrito
         </Button>
@@ -214,10 +202,10 @@ export default function CategoryPage({ params }: CategoryPageProps) {
   const categoryName = categoryNames[categoria] || categoria.charAt(0).toUpperCase() + categoria.slice(1)
 
   // ── Todo el estado va acá adentro ──
-  const [products, setProducts] = useState<Product[]>([])
+  const [products, setProducts] = useState<any[]>([])
   const [brands, setBrands] = useState<string[]>([])
   const [isLoading, setIsLoading] = useState(true)
-  const [sortBy, setSortBy] = useState<SortOption>("best-sellers")
+  const [sortBy, setSortBy] = useState<SortOption>("newest")
   const [selectedBrands, setSelectedBrands] = useState<string[]>([])
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 500000])
   const [minPrice, setMinPrice] = useState(0)
@@ -252,7 +240,6 @@ export default function CategoryPage({ params }: CategoryPageProps) {
           image: p.thumbnail ?? "/placeholder.svg?height=300&width=300",
           brand: p.collection?.title ?? "Sin marca",
           createdAt: new Date(p.created_at),
-          salesCount: 0,
           colors: p.options
             ?.find((o: any) => o.title === "Color")
             ?.values?.map((v: any) => v.value) ?? [],
@@ -277,8 +264,7 @@ export default function CategoryPage({ params }: CategoryPageProps) {
       result = result.filter((p) => selectedBrands.includes(p.brand))
     }
     result = result.filter((p) => p.price >= priceRange[0] && p.price <= priceRange[1])
-    switch (sortBy) {
-      case "best-sellers": result.sort((a, b) => b.salesCount - a.salesCount); break
+    switch (sortBy) {      
       case "price-asc":    result.sort((a, b) => a.price - b.price); break
       case "price-desc":   result.sort((a, b) => b.price - a.price); break
       case "a-z":          result.sort((a, b) => a.name.localeCompare(b.name)); break
@@ -335,7 +321,6 @@ export default function CategoryPage({ params }: CategoryPageProps) {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="best-sellers">Más vendidos</SelectItem>
                       <SelectItem value="price-asc">Precio menor a mayor</SelectItem>
                       <SelectItem value="price-desc">Precio mayor a menor</SelectItem>
                       <SelectItem value="a-z">A-Z</SelectItem>

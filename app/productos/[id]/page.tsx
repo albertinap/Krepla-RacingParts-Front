@@ -16,6 +16,7 @@ import { Navigation } from "@/components/navigation"
 import { Footer } from "@/components/footer"
 import { medusa } from "@/lib/medusa"
 
+const DEFAULT_REGION_ID = process.env.NEXT_PUBLIC_DEFAULT_REGION
 const FREE_SHIPPING_THRESHOLD = 150000
 
 function formatPrice(price: number) {
@@ -41,7 +42,7 @@ export default function ProductPage({ params }: ProductPageProps) {
 
   useEffect(() => {
     medusa.store.product.list
-    ({ handle: id, region_id: "reg_01KMGSX0FJ4G6Z9HMAAT2K4GMR" } as any)
+    ({ handle: id, region_id: DEFAULT_REGION_ID } as any)
       .then(({ products }) => {
         const found = products.find((p: any) => p.handle === id)
         if (found) setProduct(found)
@@ -103,9 +104,11 @@ export default function ProductPage({ params }: ProductPageProps) {
   const handleAddToCart = () => {
     addItem({
       id: product.id,
+      variantId: product.variants?.[0]?.id,
       name: product.title,
       price,
-      image,
+      image,      
+      quantity
     })
   }
 
@@ -142,10 +145,7 @@ export default function ProductPage({ params }: ProductPageProps) {
           <div className="grid lg:grid-cols-2 gap-8">
             {/* Imagen */}
             <div className="relative aspect-square bg-card rounded-lg overflow-hidden">
-              <Image src={image} alt={product.title} fill className="object-contain p-8" priority />
-              <div className="absolute inset-0 flex items-center justify-center opacity-10 pointer-events-none">
-                <span className="text-6xl font-bold text-foreground transform -rotate-45">KREPLA</span>
-              </div>
+              <Image src={image} alt={product.title} fill className="object-contain p-8" priority />              
             </div>
 
             {/* Detalle */}
@@ -160,7 +160,7 @@ export default function ProductPage({ params }: ProductPageProps) {
                 </p>
               </div>
 
-              {/* Opciones de pago */}
+              {/* Opciones de pago y promos */}
               <div className="space-y-3 py-4 border-y border-border">
                 <div className="flex items-center gap-2 text-sm">
                   <CreditCard className="h-4 w-4 text-primary" />
@@ -170,15 +170,7 @@ export default function ProductPage({ params }: ProductPageProps) {
                   <Percent className="h-4 w-4 text-primary" />
                   <span className="text-primary">16% de descuento pagando con transferencia</span>
                 </div>
-              </div>
-
-              {/* Envío gratis */}
-              {freeShipping && (
-                <div className="flex items-center gap-2 text-sm">
-                  <Truck className="h-4 w-4 text-primary" />
-                  <span className="text-primary">Envío gratis</span>
-                </div>
-              )}
+              </div>              
 
               {/* Cantidad y agregar */}
               <div className="flex items-center gap-4">
@@ -203,32 +195,57 @@ export default function ProductPage({ params }: ProductPageProps) {
 
               {/* Opciones de envío */}
               <div className="space-y-4 pt-4 border-t border-border">
-                <div className="flex items-center gap-2 text-sm">
+                <div className="flex items-center gap-2 text-sm font-medium">
                   <Truck className="h-4 w-4" />
-                  <span>Envío a domicilio</span>
+                  <span>Opciones de envío</span>
                 </div>
                 <RadioGroup value={shippingMethod} onValueChange={setShippingMethod} className="space-y-3">
+
                   <div
-                    className={`flex items-start gap-3 p-4 rounded-lg border cursor-pointer transition-colors ${shippingMethod === "delivery" ? "border-primary bg-primary/5" : "border-border"}`}
-                    onClick={() => setShippingMethod("delivery")}
+                    className={`flex items-start gap-3 p-4 rounded-lg border cursor-pointer transition-colors ${shippingMethod === "correo" ? "border-primary bg-primary/5" : "border-border"}`}
+                    onClick={() => setShippingMethod("correo")}
                   >
-                    <RadioGroupItem value="delivery" id="delivery" className="mt-1" />
+                    <RadioGroupItem value="correo" id="correo" className="mt-1" />
                     <div className="flex-1">
-                      <Label htmlFor="delivery" className="font-medium cursor-pointer">
-                        Correo Argentino a domicilio
-                      </Label>
+                      <Label htmlFor="correo" className="font-medium cursor-pointer">Correo Argentino a domicilio</Label>
                       <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
                         <Clock className="h-3 w-3" />
                         <span>7-10 días hábiles</span>
                       </div>
                     </div>
-                    <span className="font-semibold">{formatPrice(8431)}</span>
+                    <span className="font-semibold text-muted-foreground text-sm">A calcular</span>
                   </div>
-                  <div className="text-sm text-muted-foreground pt-2">VIA CARGO - SE RETIRA Y PAGA EN SUCURSAL</div>
-                  <div className="flex items-center gap-2 text-sm pt-2">
-                    <MapPin className="h-4 w-4" />
-                    <span>Retiro en local</span>
+
+                  <div
+                    className={`flex items-start gap-3 p-4 rounded-lg border cursor-pointer transition-colors ${shippingMethod === "andreani" ? "border-primary bg-primary/5" : "border-border"}`}
+                    onClick={() => setShippingMethod("andreani")}
+                  >
+                    <RadioGroupItem value="andreani" id="andreani" className="mt-1" />
+                    <div className="flex-1">
+                      <Label htmlFor="andreani" className="font-medium cursor-pointer">Andreani a domicilio</Label>
+                      <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
+                        <Clock className="h-3 w-3" />
+                        <span>3-5 días hábiles</span>
+                      </div>
+                    </div>
+                    <span className="font-semibold text-muted-foreground text-sm">A calcular</span>
                   </div>
+
+                  <div
+                    className={`flex items-start gap-3 p-4 rounded-lg border cursor-pointer transition-colors ${shippingMethod === "viacargo" ? "border-primary bg-primary/5" : "border-border"}`}
+                    onClick={() => setShippingMethod("viacargo")}
+                  >
+                    <RadioGroupItem value="viacargo" id="viacargo" className="mt-1" />
+                    <div className="flex-1">
+                      <Label htmlFor="viacargo" className="font-medium cursor-pointer">Vía Cargo a domicilio</Label>
+                      <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
+                        <Clock className="h-3 w-3" />
+                        <span>5-7 días hábiles</span>
+                      </div>
+                    </div>
+                    <span className="font-semibold text-muted-foreground text-sm">A calcular</span>
+                  </div>
+
                   <div
                     className={`flex items-start gap-3 p-4 rounded-lg border cursor-pointer transition-colors ${shippingMethod === "pickup" ? "border-primary bg-primary/5" : "border-border"}`}
                     onClick={() => setShippingMethod("pickup")}
@@ -236,11 +253,16 @@ export default function ProductPage({ params }: ProductPageProps) {
                     <RadioGroupItem value="pickup" id="pickup" className="mt-1" />
                     <div className="flex-1">
                       <Label htmlFor="pickup" className="font-medium cursor-pointer">
-                        Krepla Racing Parts - MITRE 755, BASAVILBASO, ENTRE RIOS
+                        Retiro en local — Krepla Racing Parts
                       </Label>
+                      <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
+                        <MapPin className="h-3 w-3" />
+                        <span>Cuba 1348, Bahía Blanca, Buenos Aires</span>
+                      </div>
                     </div>
                     <span className="font-semibold text-primary">Gratis</span>
                   </div>
+
                 </RadioGroup>
               </div>
 

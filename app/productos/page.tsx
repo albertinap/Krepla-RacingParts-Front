@@ -18,7 +18,9 @@ import { Footer } from "@/components/footer"
 import { useCart } from "@/contexts/cart-context"
 import { medusa } from "@/lib/medusa"
 
-interface Product {
+const DEFAULT_REGION_ID = process.env.NEXT_PUBLIC_DEFAULT_REGION
+
+export interface Product {
   id: string
   name: string
   handle: string
@@ -27,6 +29,12 @@ interface Product {
   brand: string
   category: string
   createdAt: Date
+  colors: string[]
+  weight: number
+  length: number
+  height: number
+  width: number
+  quantity: number
 }
 
 type SortOption = "newest" | "price-asc" | "price-desc" | "a-z" | "z-a"
@@ -61,13 +69,7 @@ function ProductCard({ product }: { product: Product }) {
   return (
     <div className="bg-card rounded-lg border border-border overflow-hidden group hover:border-primary/50 transition-colors">
       <Link href={`/productos/${product.handle}`}>
-        <div className="relative aspect-square bg-white p-4 overflow-hidden">
-          {freeShipping && (
-            <Badge className="absolute top-3 left-3 z-10 bg-green-600 hover:bg-green-600 text-white text-xs px-2 py-1 flex items-center gap-1">
-              <Truck className="h-3 w-3" />
-              ENVIO GRATIS
-            </Badge>
-          )}
+        <div className="relative aspect-square bg-white p-4 overflow-hidden">          
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
             <span className="text-6xl font-bold text-gray-200/30 rotate-[-30deg] select-none tracking-widest">
               KREPLA
@@ -95,9 +97,29 @@ function ProductCard({ product }: { product: Product }) {
         <p className="text-sm text-muted-foreground mt-1">
           3 cuotas sin interés de {formatPrice(installmentPrice)}
         </p>
+        {product.colors.length > 0 && (
+          <div className="flex gap-1 mt-2">
+            {product.colors.map((color) => (
+              <span key={color} className="text-xs text-muted-foreground border border-border rounded px-2 py-0.5">
+                {color}
+              </span>
+            ))}
+          </div>
+        )}
         <Button
           className="w-full mt-4 bg-primary hover:bg-primary/90 text-primary-foreground text-[15px]"
-          onClick={() => addItem({ id: product.id, name: product.name, price: product.price, image: product.image })}
+          onClick={() => addItem({
+            id: product.id,
+            name: product.name,
+            price: product.price,
+            image: product.image,
+            variantId: "",//product.variants?.[0]?.id
+            weight: product.weight,
+            length: product.length,
+            height: product.height,
+            width: product.width,
+            quantity: product.quantity
+          })}
         >
           Agregar al carrito
         </Button>
@@ -113,7 +135,7 @@ export default function AllProductsPage() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
   useEffect(() => {
-    medusa.store.product.list({ limit: 100, region_id: "reg_01KMGSX0FJ4G6Z9HMAAT2K4GMR" } as any)
+    medusa.store.product.list({ limit: 100, region_id: DEFAULT_REGION_ID } as any)
       .then(({ products: medusaProducts }) => {
         const mapped = medusaProducts.map((p: any) => ({
           id: p.id,
@@ -131,7 +153,10 @@ export default function AllProductsPage() {
           image: p.thumbnail ?? "/placeholder.svg?height=300&width=300",
           brand: p.collection?.title ?? "Sin marca",
           category: p.categories?.[0]?.name ?? "",
-          createdAt: new Date(p.created_at),
+          createdAt: new Date(p.created_at),          
+          colors: p.options
+            ?.find((o: any) => o.title === "Color")
+            ?.values?.map((v: any) => v.value) ?? [],
         }))
         setProducts(mapped)
         setIsLoading(false)

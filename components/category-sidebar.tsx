@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { X, ChevronRight, Bike, HardHat, Cog, Wrench, Shield, Ruler, Sticker, Package, Sparkles, Zap } from "lucide-react"
+import { X, ChevronRight, Bike, Cog, Wrench, Shield, Sticker, Motorbike, Sparkles, Zap } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { medusa } from "@/lib/medusa"
@@ -48,7 +48,7 @@ export function CategorySidebar({ isOpen, onClose }: CategorySidebarProps) {
 
         <div className="py-2">
           {categories.map((category) => {
-            const Icon = categoryIcons[category.name] || Package
+            const Icon = categoryIcons[category.name] || Motorbike
             return (
               <Link
                 key={category.id}
