@@ -41,8 +41,11 @@ export default function ProductPage({ params }: ProductPageProps) {
   const { addItem } = useCart()
 
   useEffect(() => {
-    medusa.store.product.list
-    ({ handle: id, region_id: DEFAULT_REGION_ID } as any)
+    medusa.store.product.list({
+      handle: id,
+      region_id: DEFAULT_REGION_ID,
+      fields: "*variants.calculated_price,+variants.inventory_quantity,+variants.manage_inventory"
+    } as any)
       .then(({ products }) => {
         const found = products.find((p: any) => p.handle === id)
         if (found) setProduct(found)
@@ -100,6 +103,10 @@ export default function ProductPage({ params }: ProductPageProps) {
   const freeShipping = price >= FREE_SHIPPING_THRESHOLD
   const category = product.categories?.[0]
   const image = product.thumbnail ?? "/placeholder.svg?height=600&width=600"
+  const variant = product.variants?.[0] || {}
+  const manageInventory = variant.manage_inventory ?? false
+  const inventoryQty = variant.inventory_quantity ?? 0
+  const isOutOfStock = manageInventory && inventoryQty <= 0
 
   const handleAddToCart = () => {
     addItem({
@@ -151,6 +158,11 @@ export default function ProductPage({ params }: ProductPageProps) {
             {/* Detalle */}
             <div className="space-y-6">
               <h1 className="text-2xl md:text-3xl font-bold text-foreground">{product.title}</h1>
+              {isOutOfStock && (
+                <div className="inline-block bg-red-600 text-white text-sm font-bold px-6 py-2 rounded-md mb-2">
+                  AGOTADO - Sin stock disponible
+                </div>
+              )}
 
               {/* Precio */}
               <div className="space-y-2">
@@ -186,10 +198,15 @@ export default function ProductPage({ params }: ProductPageProps) {
                   </Button>
                 </div>
                 <Button
-                  className="flex-1 bg-foreground text-background hover:bg-foreground/90 font-semibold py-6 text-lg"
+                  className={`flex-1 font-semibold py-6 text-lg ${
+                    isOutOfStock 
+                      ? "bg-muted text-muted-foreground cursor-not-allowed" 
+                      : "bg-foreground text-background hover:bg-foreground/90"
+                  }`}
                   onClick={handleAddToCart}
+                  disabled={isOutOfStock}
                 >
-                  AGREGAR AL CARRITO
+                  {isOutOfStock ? "PRODUCTO AGOTADO" : "AGREGAR AL CARRITO"}
                 </Button>
               </div>
 

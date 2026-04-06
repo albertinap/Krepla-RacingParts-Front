@@ -18,21 +18,21 @@ const oswald = Oswald({
 });
 
 export const metadata: Metadata = {
-  title: 'Krepla Racing Parts | Repuestos de Motos y Autos',
-  description: 'Tienda online de repuestos y accesorios para motos y autos. Envío a todo el país. 3 cuotas sin interés.',
+  title: 'Krepla Racing Parts | Repuestos y Accesorios para Motos',
+  description: 'Tienda online de repuestos y accesorios para motos. Envío a todo el país. Productos de calidad.',
   generator: 'v0.app',
   icons: {
     icon: [
       {
-        url: '/icon-light-32x32.png',
+        url: '/favicon-logo-light.png',
         media: '(prefers-color-scheme: light)',
       },
       {
-        url: '/icon-dark-32x32.png',
+        url: '/favicon-logo-dark.png',
         media: '(prefers-color-scheme: dark)',
       },
       {
-        url: '/icon.svg',
+        url: '/favicon-logo-light.svg',
         type: 'image/svg+xml',
       },
     ],

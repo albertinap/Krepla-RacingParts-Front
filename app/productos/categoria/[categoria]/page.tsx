@@ -29,6 +29,8 @@ interface CategoryPageProps {
   params: Promise<{ categoria: string }>
 }
 
+const DEFAULT_REGION_ID = process.env.NEXT_PUBLIC_DEFAULT_REGION
+
 const categoryNames: Record<string, string> = {
   escapes: "Escapes",
   transmision: "Transmisión",
@@ -65,12 +67,20 @@ function ProductCardSkeleton() {
 
 function ProductCard({ product, categoria }: { product: any; categoria: string }) {
   const { addItem } = useCart()
+  const isOutOfStock = !product.inStock
+
   const freeShipping = product.price >= 150000
   const transferPrice = product.price * 0.84
   const installmentPrice = product.price / 3
 
   return (
-    <div className="bg-card rounded-lg border border-border overflow-hidden group hover:border-primary/50 transition-colors">
+    <div className="bg-card rounded-lg border border-border overflow-hidden group hover:border-primary/50 transition-colors relative">
+      {isOutOfStock && (
+        <div className="absolute top-3 left-3 z-10">
+          <Badge variant="destructive" className="font-medium text-sm px-3 py-1">AGOTADO</Badge>
+        </div>
+      )}
+
       <Link href={`/productos/${product.handle}`}>
         <div className="relative aspect-square bg-white p-4 overflow-hidden">          
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
@@ -82,10 +92,11 @@ function ProductCard({ product, categoria }: { product: any; categoria: string }
             src={product.image}
             alt={product.name}
             fill
-            className="object-contain p-2 group-hover:scale-105 transition-transform duration-300"
+            className={`object-contain p-2 transition-transform duration-300 ${isOutOfStock ? "grayscale" : "group-hover:scale-105"}`}
           />
         </div>
       </Link>
+
       <div className="p-4">
         <Link href={`/productos/${product.handle}`}>
           <h3 className="text-[15px] font-medium text-foreground line-clamp-2 hover:text-primary transition-colors leading-snug">
@@ -109,16 +120,17 @@ function ProductCard({ product, categoria }: { product: any; categoria: string }
           </div>
         )}
         <Button
-          className="w-full mt-4 bg-primary hover:bg-primary/90 text-primary-foreground text-[15px]"
-          onClick={() => addItem({
+          className={`w-full mt-4 text-[15px] ${isOutOfStock ? "bg-muted text-muted-foreground cursor-not-allowed" : "bg-primary hover:bg-primary/90 text-primary-foreground"}`}
+          onClick={() => !isOutOfStock && addItem({
             id: product.id, 
             name: product.name, 
             price: product.price, 
             image: product.image,            
             variantId: product.variants?.[0]?.id,
           })}
+          disabled={isOutOfStock}
         >
-          Agregar al carrito
+          {isOutOfStock ? "Sin stock disponible" : "Agregar al carrito"}
         </Button>
       </div>
     </div>
@@ -213,49 +225,68 @@ export default function CategoryPage({ params }: CategoryPageProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
   useEffect(() => {
-    // Paso 1: buscar el ID de la categoría por su handle
+    setIsLoading(true)
+    setProducts([])
+  
+    // 1. Buscar la categoría
     medusa.store.category.list({ handle: categoria })
-      .then(({ product_categories }) => {
-        if (!product_categories.length) {
+      .then(({ product_categories }) => {        
+  
+        if (!product_categories.length) {          
           setIsLoading(false)
           return
-        }
-        const categoryId = product_categories[0].id
+        }  
+        const category = product_categories[0]
   
-        // Paso 2: buscar productos por el ID de la categoría
         return medusa.store.product.list({
-          category_id: [categoryId], 
-          region_id: "reg_01KMGSX0FJ4G6Z9HMAAT2K4GMR",                   
-        }) as any;
+          region_id: DEFAULT_REGION_ID,   
+          limit: 50,
+        }).then((allResult: any) => {          
+          return medusa.store.product.list({
+            category_id: [category.id],
+            region_id: DEFAULT_REGION_ID,
+            limit: 50,
+            fields: "*variants.calculated_price,+variants.inventory_quantity,+variants.manage_inventory",
+          })
+        })
       })
       .then((result: any) => {
         if (!result) return
-        const { products: medusaProducts } = result
-        console.log("Primer producto:", JSON.stringify(medusaProducts[0], null, 2))
-        const mapped = medusaProducts.map((p: any) => ({
-          id: p.id,
-          name: p.title,
-          handle: p.handle,
-          price: p.variants?.[0]?.calculated_price?.calculated_amount ?? 0,
-          image: p.thumbnail ?? "/placeholder.svg?height=300&width=300",
-          brand: p.collection?.title ?? "Sin marca",
-          createdAt: new Date(p.created_at),
-          colors: p.options
-            ?.find((o: any) => o.title === "Color")
-            ?.values?.map((v: any) => v.value) ?? [],
-        }))
-        setProducts(mapped)
-        const uniqueBrands = [...new Set(mapped.map((p: any) => p.brand).filter((b: string) => b !== "Sin marca"))]
-        setBrands(uniqueBrands as string[])
-        if (mapped.length > 0) {
-          const prices = mapped.map((p: any) => p.price)
-          setMinPrice(Math.min(...prices))
-          setMaxPrice(Math.max(...prices))
-          setPriceRange([Math.min(...prices), Math.max(...prices)])
+  
+        if (result.products && result.products.length > 0) {
+          const mapped = result.products.map((p: any) => {
+            const variant = p.variants?.[0] || {};
+            const manageInventory = variant.manage_inventory ?? false;
+            const inventoryQty = variant.inventory_quantity ?? 0;
+            const inStock = !manageInventory || inventoryQty > 0;
+          
+            return {
+              id: p.id,
+              name: p.title,
+              handle: p.handle,
+              price: p.variants?.[0]?.calculated_price?.calculated_amount 
+                     ?? p.variants?.[0]?.prices?.[0]?.amount ?? 0,
+              image: p.thumbnail ?? "/placeholder.svg?height=300&width=300",
+              brand: p.collection?.title ?? "Sin marca",
+              createdAt: new Date(p.created_at),
+              colors: p.options
+                ?.find((o: any) => o.title?.toLowerCase().includes("color"))
+                ?.values?.map((v: any) => v.value) ?? [],
+              // === NUEVO: lógica de stock ===
+              inStock,
+              inventory_quantity: inventoryQty,
+            };
+          });
+  
+          setProducts(mapped)
+        } else {
+          console.warn("No hay productos para esta categoría")
         }
-        setIsLoading(false)
       })
-      .catch(() => setIsLoading(false))
+      .catch((err) => {
+        console.error("Error completo:", err)
+      })
+      .finally(() => setIsLoading(false))
   }, [categoria])
 
   const filteredProducts = useMemo(() => {

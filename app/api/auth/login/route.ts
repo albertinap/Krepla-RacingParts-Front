@@ -7,30 +7,21 @@ export async function POST(req: NextRequest) {
   try {
     const { email, password } = await req.json()
 
-    // Paso 1: Autenticar con Medusa para obtener el JWT
-    const authRes = await fetch(
-      `${MEDUSA_BACKEND_URL}/auth/customer/emailpass`,
-      {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            "x-publishable-api-key": MEDUSA_PUBLISHABLE_KEY,
-          },        
-        body: JSON.stringify({ email, password }),
-      }
-    )
+    const authRes = await fetch(`${MEDUSA_BACKEND_URL}/auth/customer/emailpass`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-publishable-api-key": MEDUSA_PUBLISHABLE_KEY,
+      },
+      body: JSON.stringify({ email, password }),
+    })
 
     if (!authRes.ok) {
-      const error = await authRes.json()
-      return NextResponse.json(
-        { error: error.message || "Credenciales inválidas" },
-        { status: authRes.status }
-      )
+      return NextResponse.json({ error: "Email o contraseña incorrectos" }, { status: 401 })
     }
 
     const { token } = await authRes.json()
 
-    // Paso 2: Obtener los datos del customer con el token
     const customerRes = await fetch(`${MEDUSA_BACKEND_URL}/store/customers/me`, {
       headers: {
         "x-publishable-api-key": MEDUSA_PUBLISHABLE_KEY,
@@ -39,13 +30,17 @@ export async function POST(req: NextRequest) {
     })
 
     if (!customerRes.ok) {
-      return NextResponse.json(
-        { error: "Error al obtener datos del usuario" },
-        { status: customerRes.status }
-      )
+      return NextResponse.json({ error: "Error al obtener datos del usuario" }, { status: 500 })
     }
 
     const { customer } = await customerRes.json()
+    // Verificar si el email fue confirmado
+    if (customer.metadata?.email_verified === false) {
+      return NextResponse.json(
+        { error: "Debés confirmar tu cuenta. Revisá tu email." },
+        { status: 403 }
+      )
+    }
 
     return NextResponse.json({
       token,
@@ -53,6 +48,7 @@ export async function POST(req: NextRequest) {
         id: customer.id,
         name: `${customer.first_name} ${customer.last_name}`.trim(),
         email: customer.email,
+        phone: customer.phone ?? "",
       },
     })
   } catch (err) {

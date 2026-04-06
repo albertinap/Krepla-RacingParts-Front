@@ -18,8 +18,27 @@ import { useCart } from "@/contexts/cart-context"
 import { CategorySidebar } from "@/components/category-sidebar"
 import { cotizarEnvio, ShippingOption } from "@/lib/shipping"
 import { useRouter } from "next/navigation"
+import { useAuth } from "@/contexts/auth-context"
 
 const DEFAULT_REGION_ID = process.env.NEXT_PUBLIC_DEFAULT_REGION
+const SHIPPING_OPTION_IDS: Record<string, string> = {
+  "correo-argentino": "so_01KNHKYJPG3YZCGA7D7CPSQR7T",
+  "andreani": "so_01KNHKZ37N0CF0MVY2VHP9XB4A",
+  "via-cargo": "so_01KNHKZQ0JN3AQKX1JZ5W2RZKD",
+  "retiro-local": "so_01KNHM0A26AVXXVA4CDAXJJGNS",
+}
+
+function isValidEmail(email: string): boolean {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())
+}
+
+function isValidPhone(phone: string): boolean {
+  return phone.replace(/\D/g, "").length >= 8
+}
+
+function onlyNumbers(value: string): string {
+  return value.replace(/\D/g, "")
+}
 
 function formatPrice(price: number): string {
   return new Intl.NumberFormat("es-AR", {
@@ -130,10 +149,16 @@ export default function CheckoutPage() {
   const router = useRouter()
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [currentStep, setCurrentStep] = useState(1)
+  const { user } = useAuth()
 
   const [personalInfo, setPersonalInfo] = useState({
-    firstName: "",
-    lastName: "",
+    firstName: user?.name?.split(" ")[0] ?? "",
+    lastName: user?.name?.split(" ").slice(1).join(" ") ?? "",
+    email: user?.email ?? "",
+    phone: user?.phone ?? "",
+  })
+
+  const [personalInfoErrors, setPersonalInfoErrors] = useState({
     email: "",
     phone: "",
   })
@@ -187,7 +212,11 @@ export default function CheckoutPage() {
   const total = subtotal + shippingCost - discount
   const isRetiroLocal = shippingMethod === "retiro-local"
 
-  const isStep1Valid = personalInfo.firstName && personalInfo.lastName && personalInfo.email && personalInfo.phone
+  const isStep1Valid = 
+  personalInfo.firstName.trim() !== "" &&
+  personalInfo.lastName.trim() !== "" &&
+  isValidEmail(personalInfo.email) &&
+  isValidPhone(personalInfo.phone)
   const isStep2Valid = isRetiroLocal || (shippingQuoted && shippingMethod && shippingAddress.street && shippingAddress.number && shippingAddress.city && shippingAddress.province && shippingAddress.postalCode)
   const isStep3Valid = paymentMethod === "transfer" || paymentMethod === "debit" || (cardInfo.number && cardInfo.name && cardInfo.expiry && cardInfo.cvv)
 
@@ -201,46 +230,73 @@ export default function CheckoutPage() {
   
   const handleConfirmOrder = async () => {
     try {
-      // 1. Crear cart en Medusa
+      // 1. Crear cart con región Y sales channel
       const { cart } = await medusa.store.cart.create({
-          region_id: DEFAULT_REGION_ID,
-          email: personalInfo.email,
+        region_id: DEFAULT_REGION_ID,
+        sales_channel_id: process.env.NEXT_PUBLIC_SALES_CHANNEL_ID,
+        email: personalInfo.email,
       })
-    
-      // 2. Agregar items al cart
+  
+      // 2. Agregar items uno por uno — versión debug
       for (const item of items) {
-          await medusa.store.cart.createLineItem(cart.id, {
+        const res = await fetch(`http://localhost:9000/store/carts/${cart.id}/line-items`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "x-publishable-api-key": process.env.NEXT_PUBLIC_MEDUSA_KEY!,
+          },
+          body: JSON.stringify({
             variant_id: item.variantId,
             quantity: item.quantity,
-          })
+          }),
+        })
+        const data = await res.json()      
+        if (!res.ok) throw new Error(JSON.stringify(data))
       }
-    
-      // 3. Agregar dirección de envío
+  
+      // 3. Actualizar dirección
       await medusa.store.cart.update(cart.id, {
-          shipping_address: {
-            first_name: personalInfo.firstName,
-            last_name: personalInfo.lastName,
-            address_1: `${shippingAddress.street} ${shippingAddress.number}`,
-            address_2: shippingAddress.floor || "",
-            city: shippingAddress.city,
-            province: shippingAddress.province,
-            postal_code: shippingAddress.postalCode,
-            country_code: "ar",
-            phone: personalInfo.phone,
-          },
-          email: personalInfo.email,
+        shipping_address: {
+          first_name: personalInfo.firstName,
+          last_name: personalInfo.lastName,
+          address_1: `${shippingAddress.street} ${shippingAddress.number}`,
+          address_2: shippingAddress.floor || "",
+          city: shippingAddress.city,
+          province: shippingAddress.province,
+          postal_code: shippingAddress.postalCode,
+          country_code: "ar",
+          phone: personalInfo.phone,
+        },
+        email: personalInfo.email,
       })
-    
-      // 4. Completar la orden
-      const { order } = await medusa.store.cart.complete(cart.id)
-    
-        console.log("Orden creada:", order.id)
-        clearCart()
-        router.push(`/orden-confirmada?id=${order.id}`)
-    
+
+      // 4. Agregar shipping method
+      const shippingOptionId = SHIPPING_OPTION_IDS[shippingMethod]
+      if (!shippingOptionId) {
+        throw new Error("Método de envío no válido")
+      }
+
+      await medusa.store.cart.addShippingMethod(cart.id, {
+        option_id: shippingOptionId,
+      })
+
+      // 5. Obtener cart actualizado y crear payment session
+      const { cart: updatedCart } = await medusa.store.cart.retrieve(cart.id)
+
+      await medusa.store.payment.initiatePaymentSession(updatedCart, {
+        provider_id: paymentMethod === "transfer"
+          ? "pp_transfer_transfer"
+          : "pp_mercadopago_mercadopago",
+      })
+
+      // 6. Completar la orden
+      const { order } = await medusa.store.cart.complete(cart.id)      
+
+      clearCart()
+      router.push(`/orden-confirmada?id=${order.id}`)
     } catch (error) {
-        console.error("Error al confirmar pedido:", error)
-        alert("Hubo un error al procesar tu pedido. Intentá de nuevo.")
+      console.error("Error al confirmar pedido:", error)
+      alert("Hubo un error al procesar tu pedido. Intentá de nuevo.")
     }
   }
 
@@ -299,20 +355,61 @@ export default function CheckoutPage() {
                   </h2>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                      <Label htmlFor="firstName" className="text-[15px]">Nombre</Label>
-                      <Input id="firstName" value={personalInfo.firstName} onChange={(e) => setPersonalInfo({ ...personalInfo, firstName: e.target.value })} className="mt-2 bg-secondary border-border text-[15px]" placeholder="Juan" />
+                      <Label htmlFor="checkout-firstName" className="text-[15px]">Nombre</Label>
+                      <Input 
+                        id="checkout-firstName" 
+                        value={personalInfo.firstName} 
+                        onChange={(e) => setPersonalInfo({ ...personalInfo, firstName: e.target.value })} 
+                        className="mt-2 bg-secondary border-border text-[15px]" 
+                        placeholder="Juan" 
+                      />
                     </div>
                     <div>
-                      <Label htmlFor="lastName" className="text-[15px]">Apellido</Label>
-                      <Input id="lastName" value={personalInfo.lastName} onChange={(e) => setPersonalInfo({ ...personalInfo, lastName: e.target.value })} className="mt-2 bg-secondary border-border text-[15px]" placeholder="Pérez" />
+                      <Label htmlFor="checkout-lastName" className="text-[15px]">Apellido</Label>
+                      <Input 
+                        id="checkout-lastName" 
+                        value={personalInfo.lastName} 
+                        onChange={(e) => setPersonalInfo({ ...personalInfo, lastName: e.target.value })} 
+                        className="mt-2 bg-secondary border-border text-[15px]" 
+                        placeholder="Pérez" 
+                      />
+                      </div>
+                      <div>
+                        <Label htmlFor="checkout-email" className="text-[15px]">Email</Label>
+                        <Input
+                          id="checkout-email"
+                          type="email"
+                          value={personalInfo.email}
+                          disabled
+                          className="mt-2 bg-secondary border-border text-[15px] opacity-50 cursor-not-allowed"
+                        />
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Email asociado a tu cuenta
+                        </p>
+                        {personalInfoErrors.email && (
+                          <p className="text-xs text-destructive mt-1">{personalInfoErrors.email}</p>
+                        )}
                     </div>
                     <div>
-                      <Label htmlFor="email" className="text-[15px]">Email</Label>
-                      <Input id="email" type="email" value={personalInfo.email} onChange={(e) => setPersonalInfo({ ...personalInfo, email: e.target.value })} className="mt-2 bg-secondary border-border text-[15px]" placeholder="juan@email.com" />
-                    </div>
-                    <div>
-                      <Label htmlFor="phone" className="text-[15px]">Teléfono</Label>
-                      <Input id="phone" type="tel" value={personalInfo.phone} onChange={(e) => setPersonalInfo({ ...personalInfo, phone: e.target.value })} className="mt-2 bg-secondary border-border text-[15px]" placeholder="11 1234-5678" />
+                      <Label htmlFor="checkout-phone" className="text-[15px]">Teléfono</Label>
+                      <Input
+                        id="checkout-phone"
+                        type="tel"
+                        value={personalInfo.phone}
+                        onChange={(e) => {
+                          const cleaned = e.target.value.replace(/[^\d\s\+\-\(\)]/g, "")
+                          setPersonalInfo({ ...personalInfo, phone: cleaned })
+                          setPersonalInfoErrors({
+                            ...personalInfoErrors,
+                            phone: isValidPhone(cleaned) ? "" : "Ingresá al menos 8 dígitos",
+                          })
+                        }}
+                        className="mt-2 bg-secondary border-border text-[15px]"
+                        placeholder="11 1234-5678"
+                      />
+                      {personalInfoErrors.phone && (
+                        <p className="text-xs text-destructive mt-1">{personalInfoErrors.phone}</p>
+                      )}
                     </div>
                   </div>
                   <div className="mt-6 flex justify-end">
@@ -341,8 +438,18 @@ export default function CheckoutPage() {
                         <Input id="street" value={shippingAddress.street} onChange={(e) => setShippingAddress({ ...shippingAddress, street: e.target.value })} className="mt-2 bg-secondary border-border text-[15px]" placeholder="Av. Corrientes" />
                       </div>
                       <div>
-                        <Label htmlFor="number" className="text-[15px]">Número</Label>
-                        <Input id="number" value={shippingAddress.number} onChange={(e) => setShippingAddress({ ...shippingAddress, number: e.target.value })} className="mt-2 bg-secondary border-border text-[15px]" placeholder="1234" />
+                        <Label htmlFor="checkout-number" className="text-[15px]">Número</Label>
+                        <Input
+                          id="checkout-number"
+                          value={shippingAddress.number}
+                          onChange={(e) => setShippingAddress({ 
+                            ...shippingAddress, 
+                            number: onlyNumbers(e.target.value) 
+                          })}
+                          className="mt-2 bg-secondary border-border text-[15px]"
+                          placeholder="1234"
+                          inputMode="numeric"
+                        />
                       </div>
                       <div>
                         <Label htmlFor="floor" className="text-[15px]">Piso/Depto (opcional)</Label>

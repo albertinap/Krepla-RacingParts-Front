@@ -117,7 +117,7 @@ export function Footer() {
             <ul className="space-y-2 text-sm text-muted-foreground">
               <li>Bahía Blanca, Buenos Aires, Argentina</li>
               <li>Tel: 2915132747</li>
-              <li>krepla.racingparts@gmail.com</li>
+              <li>Email: krepla.racingparts@gmail.com</li>
               <li className="pt-2">
                 <span className="text-foreground font-medium">Horario de Atención:</span>
                 <br />

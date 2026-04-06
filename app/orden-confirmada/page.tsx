@@ -31,7 +31,7 @@ export default function OrdenConfirmadaPage() {
           </p>
           {orderId && (
             <p className="text-sm text-muted-foreground mb-6">
-              Número de orden: <span className="font-mono text-foreground">{orderId}</span>
+              Número de orden: <span className="text-foreground">{orderId}</span>
             </p>
           )}
           <Link href="/productos">

@@ -6,6 +6,7 @@ interface User {
   id: string
   name: string
   email: string
+  phone: string
 }
 
 interface AuthContextType {
@@ -15,8 +16,9 @@ interface AuthContextType {
   openLogin: () => void
   closeLogin: () => void
   login: (email: string, password: string) => Promise<void>
-  register: (name: string, email: string, password: string) => Promise<void>
+  register: (name: string, email: string, password: string, phone: string) => Promise<void>
   logout: () => void
+  setUser: (user: User) => void
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -24,6 +26,29 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 // Clave para persistir el token en localStorage
 const TOKEN_KEY = "medusa_token"
 const USER_KEY = "medusa_user"
+
+
+
+function traducirError(msg: string): string {
+  const errores: Record<string, string> = {
+    "Invalid credentials": "Email o contraseña incorrectos",
+    "Customer with email already exists": "Ya existe una cuenta con ese email",
+    "Email already exists": "Ya existe una cuenta con ese email",
+    "Invalid token": "El enlace es inválido o ya expiró",
+    "Token expired": "El enlace expiró, solicitá uno nuevo",
+    "identifier is required": "El email es obligatorio",
+    "password is required": "La contraseña es obligatoria",
+    "Not found": "No encontramos una cuenta con ese email",
+    "Unauthorized": "No autorizado",
+    "Network Error": "Error de conexión, revisá tu internet",
+  }
+
+  for (const [key, value] of Object.entries(errores)) {
+    if (msg.includes(key)) return value
+  }
+
+  return "Ocurrió un error inesperado, intentá de nuevo"
+}
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
@@ -60,28 +85,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const data = await res.json()
 
     if (!res.ok) {
-      throw new Error(data.error || "Error al iniciar sesión")
-    }
+      throw new Error(traducirError(data.error) || "Error al iniciar sesión")
+    }    
 
     saveSession(data.token, data.user)
     closeLogin()
   }
 
-  const register = async (name: string, email: string, password: string) => {
+  const register = async (name: string, email: string, password: string, phone: string) => {
     const res = await fetch("/api/auth/register", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, email, password }),
+      body: JSON.stringify({ name, email, password, phone }),
     })
-
+  
     const data = await res.json()
-
+  
     if (!res.ok) {
-      throw new Error(data.error || "Error al crear la cuenta")
+      throw new Error(traducirError(data.error) || "Error al crear la cuenta")
     }
-
-    saveSession(data.token, data.user)
-    closeLogin()
+  
+    // Ya no guardamos sesión ni cerramos el modal
+    // El usuario debe verificar el email primero
+    // Lanzamos el mensaje como señal para que el modal lo muestre en verde
+    throw new Error(data.message)
   }
 
   const logout = () => {
@@ -89,6 +116,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setToken(null)
     localStorage.removeItem(TOKEN_KEY)
     localStorage.removeItem(USER_KEY)
+  }
+  
+  const updateUser = (newUser: User) => {
+    setUser(newUser)
+    localStorage.setItem(USER_KEY, JSON.stringify(newUser))
   }
 
   return (
@@ -102,6 +134,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         login,
         register,
         logout,
+        setUser: updateUser
       }}
     >
       {children}
