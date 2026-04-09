@@ -5,6 +5,7 @@ import { useAuth } from "@/contexts/auth-context"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { X, Eye, EyeOff } from "lucide-react"
+import toast from "react-hot-toast"
 
 function PasswordInput({
   value,
@@ -157,7 +158,7 @@ export default function CuentaModal({ open, onClose }: CuentaModalProps) {
       const data = await res.json()
       if (!res.ok) throw new Error(data.error)
       setUser({ ...user, name: `${firstName} ${lastName}`.trim(), email, phone })
-      setProfileSuccess("Datos actualizados correctamente")
+      toast.success("Datos actualizados correctamente.")
     } catch (err: any) {
       setProfileError(err.message || "Error al actualizar")
     } finally {

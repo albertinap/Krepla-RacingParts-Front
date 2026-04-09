@@ -15,6 +15,7 @@ import { Header } from "@/components/header"
 import { Navigation } from "@/components/navigation"
 import { Footer } from "@/components/footer"
 import { medusa } from "@/lib/medusa"
+import { mapProduct, PRODUCT_FIELDS, MappedProduct } from "@/lib/products"
 
 const DEFAULT_REGION_ID = process.env.NEXT_PUBLIC_DEFAULT_REGION
 const FREE_SHIPPING_THRESHOLD = 150000
@@ -109,6 +110,15 @@ export default function ProductPage({ params }: ProductPageProps) {
   const isOutOfStock = manageInventory && inventoryQty <= 0
 
   const handleAddToCart = () => {
+    if (isOutOfStock) return
+    
+    const mapped = mapProduct(product)
+    
+    if (!mapped.variantId) {
+      alert("Este producto no tiene variantes configuradas.")
+      return
+    }
+    
     addItem({
       id: product.id,
       variantId: product.variants?.[0]?.id,

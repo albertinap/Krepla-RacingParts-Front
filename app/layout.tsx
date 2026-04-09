@@ -6,6 +6,7 @@ import { CartProvider } from '@/contexts/cart-context'
 import { AuthProvider } from '@/contexts/auth-context'
 import { ShoppingCart } from '@/components/shopping-cart'
 import { LoginModal } from '@/components/login-modal'
+import { Toaster } from "react-hot-toast"
 
 const geist = Geist({ 
   subsets: ["latin"],
@@ -56,6 +57,14 @@ export default function RootLayout({
           </AuthProvider>
         </CartProvider>
         <Analytics />
+        <Toaster 
+          position="top-right" 
+          toastOptions={{
+            style: {
+              background: "#000",
+              color: "#fff",
+            },
+          }} />
       </body>
     </html>
   )

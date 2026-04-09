@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
 import { FieldGroup, Field, FieldLabel } from "@/components/ui/field"
+import toast from "react-hot-toast"
 
 function PasswordInput({
   id,
@@ -48,8 +49,10 @@ function PasswordInput({
 function getPasswordStrength(pass: string): { score: number; label: string; color: string } {
   if (!pass) return { score: 0, label: "", color: "" }
   let score = 0
-  if (pass.length >= 7) score++
-  if (pass.length >= 10) score++
+  if (pass.length >= 6) score++
+  if (pass.length >= 9) score++
+  if (pass.length >= 11) score++
+  if (/[^A-Za-z0-9]/.test(pass)) score++
   if (/[A-Z]/.test(pass) && /[0-9]/.test(pass)) score++
   score = Math.max(1, score)
   const map = [
@@ -128,13 +131,14 @@ export function LoginModal() {
     setIsLoading(true)
     try {
       await register(registerName, registerEmail, registerPassword, registerPhone)
-      // register ya no loguea, solo muestra el mensaje
+      toast.success("¡Cuenta creada exitosamente!")
+      closeLogin()
     } catch (err: any) {
       const msg = err.message || ""
-      if (msg.includes("Revisá tu email")) {
-        setSuccessMessage(msg)  // mensaje verde
+      if (msg.includes("Cuenta creada") || msg.includes("Revisá tu email") || msg.includes("email")) {
+        setSuccessMessage(msg)
       } else {
-        setError(msg)           // mensaje rojo
+        setError(msg)
       }
     } finally {
       setIsLoading(false)

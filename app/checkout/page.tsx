@@ -167,6 +167,7 @@ export default function CheckoutPage() {
   const [shippingOptions, setShippingOptions] = useState<ShippingOption[]>([])
   const [loadingShipping, setLoadingShipping] = useState(false)
   const [shippingQuoted, setShippingQuoted] = useState(false)
+  const [isConfirming, setIsConfirming] = useState(false)
 
   const [shippingAddress, setShippingAddress] = useState({
     street: "",
@@ -229,6 +230,7 @@ export default function CheckoutPage() {
   }
   
   const handleConfirmOrder = async () => {
+    setIsConfirming(true)
     try {
       // 1. Crear cart con región Y sales channel
       const { cart } = await medusa.store.cart.create({
@@ -237,6 +239,12 @@ export default function CheckoutPage() {
         email: personalInfo.email,
       })
   
+      console.log("[ITEMS]", JSON.stringify(items.map(i => ({ 
+        id: i.id, 
+        name: i.name,
+        variantId: i.variantId 
+      }))))
+      
       // 2. Agregar items uno por uno — versión debug
       for (const item of items) {
         const res = await fetch(`http://localhost:9000/store/carts/${cart.id}/line-items`, {
@@ -289,14 +297,28 @@ export default function CheckoutPage() {
           : "pp_mercadopago_mercadopago",
       })
 
-      // 6. Completar la orden
-      const { order } = await medusa.store.cart.complete(cart.id)      
+      // 6. Completar la orden — sin authorize, el provider de transferencia
+      // acepta status "pending" directamente
+      const completeRes = await fetch(`http://localhost:9000/store/carts/${cart.id}/complete`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-publishable-api-key": process.env.NEXT_PUBLIC_MEDUSA_KEY!,
+        },
+      })
+      const completeData = await completeRes.json()
+      console.log("[COMPLETE]", completeRes.status, JSON.stringify(completeData))
 
+      if (!completeRes.ok) throw new Error(JSON.stringify(completeData))
+
+      const order = completeData.order
       clearCart()
       router.push(`/orden-confirmada?id=${order.id}`)
     } catch (error) {
       console.error("Error al confirmar pedido:", error)
       alert("Hubo un error al procesar tu pedido. Intentá de nuevo.")
+    } finally {
+      setIsConfirming(false)
     }
   }
 
@@ -642,7 +664,20 @@ export default function CheckoutPage() {
                   </div>
                   <div className="mt-6 flex justify-between">
                     <Button variant="outline" onClick={handlePrevStep} className="text-[15px]">Volver</Button>
-                    <Button onClick={handleConfirmOrder} className="bg-primary hover:bg-primary/90 text-[15px] px-8">Confirmar pedido</Button>
+                    <Button
+                      onClick={handleConfirmOrder}
+                      disabled={isConfirming}
+                      className="bg-primary hover:bg-primary/90 text-[15px] px-8"
+                    >
+                      {isConfirming ? (
+                        <span className="flex items-center gap-2">
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                          Procesando pedido...
+                        </span>
+                      ) : (
+                        "Confirmar pedido"
+                      )}
+                    </Button>
                   </div>
                 </div>
               )}

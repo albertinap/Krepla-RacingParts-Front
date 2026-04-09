@@ -24,6 +24,7 @@ import { Navigation } from "@/components/navigation"
 import { Footer } from "@/components/footer"
 import { useCart } from "@/contexts/cart-context"
 import { CategorySidebar } from "@/components/category-sidebar"
+import { mapProduct, PRODUCT_FIELDS, MappedProduct } from "@/lib/products"
 
 interface CategoryPageProps {
   params: Promise<{ categoria: string }>
@@ -122,11 +123,11 @@ function ProductCard({ product, categoria }: { product: any; categoria: string }
         <Button
           className={`w-full mt-4 text-[15px] ${isOutOfStock ? "bg-muted text-muted-foreground cursor-not-allowed" : "bg-primary hover:bg-primary/90 text-primary-foreground"}`}
           onClick={() => !isOutOfStock && addItem({
-            id: product.id, 
-            name: product.name, 
-            price: product.price, 
-            image: product.image,            
-            variantId: product.variants?.[0]?.id,
+            id: product.id,
+            name: product.name,
+            price: product.price,
+            image: product.image,
+            variantId: product.variantId,  // ← directo, sin optional chaining
           })}
           disabled={isOutOfStock}
         >
@@ -254,29 +255,7 @@ export default function CategoryPage({ params }: CategoryPageProps) {
         if (!result) return
   
         if (result.products && result.products.length > 0) {
-          const mapped = result.products.map((p: any) => {
-            const variant = p.variants?.[0] || {};
-            const manageInventory = variant.manage_inventory ?? false;
-            const inventoryQty = variant.inventory_quantity ?? 0;
-            const inStock = !manageInventory || inventoryQty > 0;
-          
-            return {
-              id: p.id,
-              name: p.title,
-              handle: p.handle,
-              price: p.variants?.[0]?.calculated_price?.calculated_amount 
-                     ?? p.variants?.[0]?.prices?.[0]?.amount ?? 0,
-              image: p.thumbnail ?? "/placeholder.svg?height=300&width=300",
-              brand: p.collection?.title ?? "Sin marca",
-              createdAt: new Date(p.created_at),
-              colors: p.options
-                ?.find((o: any) => o.title?.toLowerCase().includes("color"))
-                ?.values?.map((v: any) => v.value) ?? [],
-              // === NUEVO: lógica de stock ===
-              inStock,
-              inventory_quantity: inventoryQty,
-            };
-          });
+          const mapped = result.products.map(mapProduct)
   
           setProducts(mapped)
         } else {

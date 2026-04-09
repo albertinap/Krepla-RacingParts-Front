@@ -6,7 +6,7 @@ const MEDUSA_BACKEND_URL = process.env.NEXT_PUBLIC_MEDUSA_URL || "http://localho
 const MEDUSA_PUBLISHABLE_KEY = process.env.NEXT_PUBLIC_MEDUSA_KEY!
 const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET || "supersecret")
 
-export async function POST(req: NextRequest) {
+export async function POST(req: NextRequest) {  
   try {
     const { name, email, password, phone } = await req.json()
 
@@ -68,15 +68,14 @@ export async function POST(req: NextRequest) {
       },
       body: JSON.stringify({ metadata: { email_verified: false } }),
     })
-
-    // Paso 4: Generar token de verificación (expira en 24hs)
+    /*// Paso 4: Generar token de verificación (expira en 24hs)
     const verifyToken = await new SignJWT({ email, customerId: customer.id })
       .setProtectedHeader({ alg: "HS256" })
       .setExpirationTime("24h")
       .sign(JWT_SECRET)
 
     // Paso 5: Enviar email de verificación
-    await sendEmailVerification(email, verifyToken)
+    await sendEmailVerification(email, verifyToken)*/
 
     // No devolvemos token de sesión — el usuario debe verificar primero
     return NextResponse.json({

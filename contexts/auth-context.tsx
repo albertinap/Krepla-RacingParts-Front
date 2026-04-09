@@ -30,8 +30,10 @@ const USER_KEY = "medusa_user"
 
 
 function traducirError(msg: string): string {
+  console.log("traducirError recibió:", JSON.stringify(msg)) // ← agregá esto
   const errores: Record<string, string> = {
     "Invalid credentials": "Email o contraseña incorrectos",
+    "Identity with email already exists": "Ya existe una cuenta con ese email",
     "Customer with email already exists": "Ya existe una cuenta con ese email",
     "Email already exists": "Ya existe una cuenta con ese email",
     "Invalid token": "El enlace es inválido o ya expiró",
@@ -100,6 +102,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     })
   
     const data = await res.json()
+    console.log("Error recibido:", data.error) // ← agregá esto
   
     if (!res.ok) {
       throw new Error(traducirError(data.error) || "Error al crear la cuenta")
@@ -108,7 +111,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Ya no guardamos sesión ni cerramos el modal
     // El usuario debe verificar el email primero
     // Lanzamos el mensaje como señal para que el modal lo muestre en verde
-    throw new Error(data.message)
+    //throw new Error(data.message)
   }
 
   const logout = () => {

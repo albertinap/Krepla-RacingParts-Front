@@ -21,29 +21,9 @@ import { CategorySidebar } from "@/components/category-sidebar"
 import { Footer } from "@/components/footer"
 import { useCart } from "@/contexts/cart-context"
 import { medusa } from "@/lib/medusa"
+import { mapProduct, PRODUCT_FIELDS, MappedProduct } from "@/lib/products"
 
 const DEFAULT_REGION_ID = process.env.NEXT_PUBLIC_DEFAULT_REGION
-
-export interface Product {
-  id: string
-  name: string
-  handle: string
-  price: number
-  image: string
-  brand: string
-  category: string
-  createdAt: Date
-  colors: string[]
-  weight: number
-  length: number
-  height: number
-  width: number
-  quantity: number
-  // Nuevos campos para stock
-  inStock: boolean
-  inventory_quantity: number
-  manage_inventory: boolean
-}
 
 type SortOption = "newest" | "price-asc" | "price-desc" | "a-z" | "z-a"
 
@@ -68,7 +48,7 @@ function ProductCardSkeleton() {
   )
 }
 
-function ProductCard({ product }: { product: Product }) {
+function ProductCard({ product }: { product: MappedProduct }) {
   const { addItem } = useCart()
   const freeShipping = product.price >= 150000
   const transferPrice = product.price * 0.84
@@ -84,12 +64,7 @@ function ProductCard({ product }: { product: Product }) {
       name: product.name,
       price: product.price,
       image: product.image,
-      variantId: "", // product.variants?.[0]?.id
-      weight: product.weight,
-      length: product.length,
-      height: product.height,
-      width: product.width,
-      quantity: product.quantity,
+      variantId: product.variantId, 
     })
   }
 
@@ -168,7 +143,7 @@ function ProductCard({ product }: { product: Product }) {
 }
 
 export default function AllProductsPage() {
-  const [products, setProducts] = useState<Product[]>([])
+  const [products, setProducts] = useState<MappedProduct[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [sortBy, setSortBy] = useState<SortOption>("newest")
   const [sidebarOpen, setSidebarOpen] = useState(false)
@@ -182,45 +157,7 @@ export default function AllProductsPage() {
         fields: "*variants.calculated_price,+variants.inventory_quantity,+variants.manage_inventory",
       } as any)
       .then(({ products: medusaProducts }) => {
-        const mapped = medusaProducts.map((p: any) => {
-          const variant = p.variants?.[0]
-
-          const inventoryQuantity = variant?.inventory_quantity ?? 0
-          const manageInventory = variant?.manage_inventory ?? false
-
-          // Lógica estándar de Medusa:
-          // - Si manage_inventory = false → siempre en stock
-          // - Si manage_inventory = true → en stock si inventory_quantity > 0
-          const inStock = !manageInventory || inventoryQuantity > 0
-
-          return {
-            id: p.id,
-            name: p.title,
-            handle: p.handle,
-            price: variant
-              ? variant.calculated_price?.calculated_amount ??
-                variant.calculated_price?.original_amount ??
-                variant.prices?.[0]?.amount ??
-                0
-              : 0,
-            image: p.thumbnail ?? "/placeholder.svg?height=300&width=300",
-            brand: p.collection?.title ?? "Sin marca",
-            category: p.categories?.[0]?.name ?? "",
-            createdAt: new Date(p.created_at),
-            colors:
-              p.options?.find((o: any) => o.title === "Color")?.values?.map((v: any) => v.value) ?? [],
-            // Campos nuevos
-            inStock,
-            inventory_quantity: inventoryQuantity,
-            manage_inventory: manageInventory,
-            // Campos que ya tenías (podes dejarlos en 0 si no los usás todavía)
-            weight: 0,
-            length: 0,
-            height: 0,
-            width: 0,
-            quantity: inventoryQuantity,
-          }
-        })
+        const mapped = medusaProducts.map(mapProduct)
 
         setProducts(mapped)
         setIsLoading(false)
