@@ -5,6 +5,9 @@ import Link from "next/link"
 import Image from "next/image"
 import { ChevronRight, Truck } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Checkbox } from "@/components/ui/checkbox"
+import { Slider } from "@/components/ui/slider"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Badge } from "@/components/ui/badge"
 import {
@@ -50,35 +53,27 @@ function ProductCardSkeleton() {
 
 function ProductCard({ product }: { product: MappedProduct }) {
   const { addItem } = useCart()
-  const freeShipping = product.price >= 150000
-  const transferPrice = product.price * 0.84
-  const installmentPrice = product.price / 3
-
+  const transferPrice = product.price * 0.90
   const isOutOfStock = !product.inStock
 
   const handleAddToCart = () => {
     if (isOutOfStock) return
-
     addItem({
       id: product.id,
       name: product.name,
       price: product.price,
       image: product.image,
-      variantId: product.variantId,  // ← directo, sin optional chaining anidado
+      variantId: product.variantId,
     })
   }
 
   return (
     <div className="bg-card rounded-lg border border-border overflow-hidden group hover:border-primary/50 transition-colors relative">
-      {/* Cartel AGOTADO */}
       {isOutOfStock && (
         <div className="absolute top-3 left-3 z-10">
-          <Badge variant="destructive" className="font-medium text-sm px-3 py-1">
-            AGOTADO
-          </Badge>
+          <Badge variant="destructive" className="font-medium text-sm px-3 py-1">AGOTADO</Badge>
         </div>
       )}
-
       <Link href={`/productos/${product.handle}`}>
         <div className="relative aspect-square bg-white p-4 overflow-hidden">
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
@@ -96,7 +91,6 @@ function ProductCard({ product }: { product: MappedProduct }) {
           />
         </div>
       </Link>
-
       <div className="p-4">
         <p className="text-xs text-muted-foreground mb-1">{product.category}</p>
         <Link href={`/productos/${product.handle}`}>
@@ -104,28 +98,19 @@ function ProductCard({ product }: { product: MappedProduct }) {
             {product.name}
           </h3>
         </Link>
-
         <p className="text-xl font-bold text-foreground mt-2">{formatPrice(product.price)}</p>
         <p className="text-sm text-green-500 font-medium mt-1">
-          {formatPrice(transferPrice)} con -16% DESCUENTO en Transferencia
-        </p>
-        <p className="text-sm text-muted-foreground mt-1">
-          3 cuotas sin interés de {formatPrice(installmentPrice)}
-        </p>
-
+          {formatPrice(transferPrice)} con -10% DESCUENTO en Transferencia
+        </p>        
         {product.colors.length > 0 && (
           <div className="flex gap-1 mt-2">
             {product.colors.map((color) => (
-              <span
-                key={color}
-                className="text-xs text-muted-foreground border border-border rounded px-2 py-0.5"
-              >
+              <span key={color} className="text-xs text-muted-foreground border border-border rounded px-2 py-0.5">
                 {color}
               </span>
             ))}
           </div>
         )}
-
         <Button
           className={`w-full mt-4 text-[15px] ${
             isOutOfStock
@@ -142,10 +127,107 @@ function ProductCard({ product }: { product: MappedProduct }) {
   )
 }
 
+function FiltersSidebar({
+  brands, selectedBrands, onBrandChange, onClearBrands,
+  priceRange, onPriceRangeChange, minPrice, maxPrice, onClearFilters,
+}: {
+  brands: string[]
+  selectedBrands: string[]
+  onBrandChange: (brand: string, checked: boolean) => void
+  priceRange: [number, number]
+  onPriceRangeChange: (range: [number, number]) => void
+  minPrice: number
+  maxPrice: number
+  onClearFilters: () => void
+  onClearBrands: () => void
+}) {
+  return (
+    <aside className="w-full lg:w-72 shrink-0">
+      <div className="bg-card border border-border rounded-lg p-5 sticky top-4">
+        <h2 className="text-xl font-bold text-foreground mb-6">Filtros</h2>
+
+        <div className="mb-6">
+          <h3 className="text-[15px] font-semibold text-foreground mb-4">Precio</h3>
+          <div className="flex gap-3 mb-4">
+            <div className="flex-1">
+              <label className="text-sm text-muted-foreground mb-1 block">Desde</label>
+              <Input
+                type="number"
+                value={priceRange[0]}
+                onChange={(e) => onPriceRangeChange([Number(e.target.value), priceRange[1]])}
+                className="bg-secondary border-border text-[15px]"
+              />
+            </div>
+            <div className="flex-1">
+              <label className="text-sm text-muted-foreground mb-1 block">Hasta</label>
+              <Input
+                type="number"
+                value={priceRange[1]}
+                onChange={(e) => onPriceRangeChange([priceRange[0], Number(e.target.value)])}
+                className="bg-secondary border-border text-[15px]"
+              />
+            </div>
+          </div>
+          <Slider
+            value={priceRange}
+            onValueChange={(value) => onPriceRangeChange(value as [number, number])}
+            min={minPrice}
+            max={maxPrice}
+            step={1000}
+            className="mt-2"
+          />
+        </div>
+
+        {brands.length > 0 && (
+        <div className="mb-6">
+          <h3 className="text-[15px] font-semibold text-foreground mb-4">Marcas</h3>
+          <div className="space-y-3">
+
+            {/* Checkbox "Todas las marcas" */}
+            <label className="flex items-center gap-3 cursor-pointer">
+              <Checkbox
+                checked={selectedBrands.length === 0}
+                onCheckedChange={(checked) => {
+                  if (checked) onClearBrands()
+                }}
+              />
+              <span className="text-[15px] text-foreground font-medium">Todas las marcas</span>
+            </label>
+
+          <div className="border-t border-border pt-3 space-y-3">
+          {brands.map((brand) => (
+            <label key={brand} className="flex items-center gap-3 cursor-pointer">
+              <Checkbox
+                checked={selectedBrands.includes(brand)}
+                onCheckedChange={(checked) => onBrandChange(brand, checked as boolean)}
+              />
+              <span className="text-[15px] text-foreground">{brand}</span>
+            </label>
+          ))}
+        </div>
+        
+
+    </div>
+  </div>
+)}
+
+        <Button variant="outline" className="w-full text-[15px]" onClick={onClearFilters}>
+          Limpiar filtros
+        </Button>
+      </div>
+    </aside>
+  )
+}
+
 export default function AllProductsPage() {
   const [products, setProducts] = useState<MappedProduct[]>([])
+  const [brands, setBrands] = useState<string[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [sortBy, setSortBy] = useState<SortOption>("newest")
+  const [selectedBrands, setSelectedBrands] = useState<string[]>([])
+  const [priceRange, setPriceRange] = useState<[number, number]>([0, 500000])
+  const [minPrice, setMinPrice] = useState(0)
+  const [maxPrice, setMaxPrice] = useState(500000)
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
   useEffect(() => {
@@ -153,13 +235,26 @@ export default function AllProductsPage() {
       .list({
         limit: 100,
         region_id: DEFAULT_REGION_ID,
-        // Campos necesarios para stock + precio
-        fields: "*variants.calculated_price,+variants.inventory_quantity,+variants.manage_inventory",
+        fields: `${PRODUCT_FIELDS},+collection`,
       } as any)
       .then(({ products: medusaProducts }) => {
         const mapped = medusaProducts.map(mapProduct)
-
         setProducts(mapped)
+
+        const uniqueBrands = [...new Set(
+          mapped
+            .map((p: MappedProduct) => p.brand)
+            .filter((b: string) => b && b !== "Sin marca")
+        )] as string[]
+        setBrands(uniqueBrands)
+
+        if (mapped.length > 0) {
+          const prices = mapped.map((p: MappedProduct) => p.price)
+          setMinPrice(Math.min(...prices))
+          setMaxPrice(Math.max(...prices))
+          setPriceRange([Math.min(...prices), Math.max(...prices)])
+        }
+
         setIsLoading(false)
       })
       .catch((err) => {
@@ -168,23 +263,34 @@ export default function AllProductsPage() {
       })
   }, [])
 
-  const sortedProducts = useMemo(() => {
-    const result = [...products]
-    switch (sortBy) {
-      case "price-asc":
-        return result.sort((a, b) => a.price - b.price)
-      case "price-desc":
-        return result.sort((a, b) => b.price - a.price)
-      case "a-z":
-        return result.sort((a, b) => a.name.localeCompare(b.name))
-      case "z-a":
-        return result.sort((a, b) => b.name.localeCompare(b.name))
-      case "newest":
-        return result.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
-      default:
-        return result
+  const filteredAndSortedProducts = useMemo(() => {
+    let result = [...products]
+
+    if (selectedBrands.length > 0) {
+      result = result.filter((p) => selectedBrands.includes(p.brand))
     }
-  }, [products, sortBy])
+
+    result = result.filter((p) => p.price >= priceRange[0] && p.price <= priceRange[1])
+
+    switch (sortBy) {
+      case "price-asc":  result.sort((a, b) => a.price - b.price); break
+      case "price-desc": result.sort((a, b) => b.price - a.price); break
+      case "a-z":        result.sort((a, b) => a.name.localeCompare(b.name)); break
+      case "z-a":        result.sort((a, b) => b.name.localeCompare(a.name)); break
+      case "newest":     result.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime()); break
+    }
+
+    return result
+  }, [products, selectedBrands, priceRange, sortBy])
+
+  const handleBrandChange = (brand: string, checked: boolean) => {
+    setSelectedBrands((prev) => checked ? [...prev, brand] : prev.filter((b) => b !== brand))
+  }
+
+  const handleClearFilters = () => {
+    setSelectedBrands([])
+    setPriceRange([minPrice, maxPrice])
+  }
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -195,25 +301,63 @@ export default function AllProductsPage() {
 
       <main className="flex-1">
         <div className="max-w-7xl mx-auto px-4 py-6">
-          {/* ... resto del JSX igual (navegación, título, select de orden) ... */}
+          <nav className="flex items-center gap-2 text-sm text-muted-foreground mb-6">
+            <Link href="/" className="hover:text-foreground transition-colors">Inicio</Link>
+            <ChevronRight className="h-4 w-4" />
+            <span className="text-foreground font-medium">Todos los productos</span>
+          </nav>
 
-          {isLoading ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-              {Array.from({ length: 12 }).map((_, i) => (
-                <ProductCardSkeleton key={i} />
-              ))}
+          <div className="flex flex-col lg:flex-row gap-6">
+            <FiltersSidebar
+              brands={brands}
+              selectedBrands={selectedBrands}
+              onBrandChange={handleBrandChange}
+              priceRange={priceRange}
+              onPriceRangeChange={setPriceRange}
+              minPrice={minPrice}
+              maxPrice={maxPrice}
+              onClearFilters={handleClearFilters}
+              onClearBrands={() => setSelectedBrands([])}
+            />
+
+            <div className="flex-1">
+              <div className="flex items-center justify-between mb-6">
+                <p className="text-[15px] text-muted-foreground">{filteredAndSortedProducts.length} productos</p>
+                <div className="flex items-center gap-3">
+                  <span className="text-sm text-muted-foreground hidden sm:block">Ordenar por:</span>
+                  <Select value={sortBy} onValueChange={(value) => setSortBy(value as SortOption)}>
+                    <SelectTrigger className="w-[200px] bg-secondary border-border text-[15px]">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="price-asc">Precio menor a mayor</SelectItem>
+                      <SelectItem value="price-desc">Precio mayor a menor</SelectItem>
+                      <SelectItem value="a-z">A-Z</SelectItem>
+                      <SelectItem value="z-a">Z-A</SelectItem>
+                      <SelectItem value="newest">Más nuevo</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              {isLoading ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                  {Array.from({ length: 12 }).map((_, i) => <ProductCardSkeleton key={i} />)}
+                </div>
+              ) : filteredAndSortedProducts.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-16 text-center">
+                  <p className="text-xl text-muted-foreground mb-4">No hay productos que coincidan con los filtros</p>
+                  <Button variant="outline" onClick={handleClearFilters}>Limpiar filtros</Button>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                  {filteredAndSortedProducts.map((product) => (
+                    <ProductCard key={product.id} product={product} />
+                  ))}
+                </div>
+              )}
             </div>
-          ) : sortedProducts.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-16 text-center">
-              <p className="text-xl text-muted-foreground">No hay productos disponibles</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-              {sortedProducts.map((product) => (
-                <ProductCard key={product.id} product={product} />
-              ))}
-            </div>
-          )}
+          </div>
         </div>
       </main>
 

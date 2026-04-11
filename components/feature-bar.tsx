@@ -7,15 +7,10 @@ const features = [
     icon: Truck,
     title: "Envíos",
     description: "A todo el País",
-  },
-  {
-    icon: CreditCard,
-    title: "Tarjeta de Credito",
-    description: "3 Cuotas SIN INTERÉS!",
-  },
+  },  
   {
     icon: Percent,
-    title: "-16% Descuento",
+    title: "-10% Descuento",
     description: "con Transferencias",
   },
   {

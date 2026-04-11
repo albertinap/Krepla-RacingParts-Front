@@ -70,8 +70,7 @@ function ProductCard({ product, categoria }: { product: any; categoria: string }
   const { addItem } = useCart()
   const isOutOfStock = !product.inStock
 
-  const freeShipping = product.price >= 150000
-  const transferPrice = product.price * 0.84
+  const transferPrice = product.price * 0.90
   const installmentPrice = product.price / 3
 
   return (
@@ -106,11 +105,8 @@ function ProductCard({ product, categoria }: { product: any; categoria: string }
         </Link>
         <p className="text-xl font-bold text-foreground mt-2">{formatPrice(product.price)}</p>
         <p className="text-sm text-green-500 font-medium mt-1">
-          {formatPrice(transferPrice)} con -16% DESCUENTO en Transferencia
-        </p>
-        <p className="text-sm text-muted-foreground mt-1">
-          3 cuotas sin interés de {formatPrice(installmentPrice)}
-        </p>
+          {formatPrice(transferPrice)} con -10% DESCUENTO en Transferencia
+        </p>        
         {product.colors.length > 0 && (
           <div className="flex gap-1 mt-2">
             {product.colors?.map((color: string) => (
@@ -127,7 +123,7 @@ function ProductCard({ product, categoria }: { product: any; categoria: string }
             name: product.name,
             price: product.price,
             image: product.image,
-            variantId: product.variantId,  // ← directo, sin optional chaining
+            variantId: product.variantId,  
           })}
           disabled={isOutOfStock}
         >
@@ -139,7 +135,7 @@ function ProductCard({ product, categoria }: { product: any; categoria: string }
 }
 
 function FiltersSidebar({
-  categoryName, brands, selectedBrands, onBrandChange,
+  categoryName, brands, selectedBrands, onBrandChange, onClearBrands,
   priceRange, onPriceRangeChange, minPrice, maxPrice, onClearFilters,
 }: {
   categoryName: string
@@ -151,6 +147,7 @@ function FiltersSidebar({
   minPrice: number
   maxPrice: number
   onClearFilters: () => void
+  onClearBrands: () => void
 }) {
   return (
     <aside className="w-full lg:w-72 shrink-0">
@@ -187,9 +184,23 @@ function FiltersSidebar({
             className="mt-2"
           />
         </div>
+        {brands.length > 0 && (
         <div className="mb-6">
           <h3 className="text-[15px] font-semibold text-foreground mb-4">Marcas</h3>
           <div className="space-y-3">
+
+            {/* Checkbox "Todas las marcas" */}
+            <label className="flex items-center gap-3 cursor-pointer">
+              <Checkbox
+                checked={selectedBrands.length === 0}
+                onCheckedChange={(checked) => {
+                  if (checked) onClearBrands()
+                }}
+              />
+              <span className="text-[15px] text-foreground font-medium">Todas las marcas</span>
+            </label>
+
+          <div className="border-t border-border pt-3 space-y-3">
             {brands.map((brand) => (
               <label key={brand} className="flex items-center gap-3 cursor-pointer">
                 <Checkbox
@@ -200,10 +211,12 @@ function FiltersSidebar({
               </label>
             ))}
           </div>
+          </div>
+          <Button variant="outline" className="w-full text-[15px] mt-4" onClick={onClearFilters}>
+            Limpiar filtros
+          </Button>
         </div>
-        <Button variant="outline" className="w-full text-[15px]" onClick={onClearFilters}>
-          Limpiar filtros
-        </Button>
+        )}
       </div>
     </aside>
   )
@@ -229,35 +242,42 @@ export default function CategoryPage({ params }: CategoryPageProps) {
     setIsLoading(true)
     setProducts([])
   
-    // 1. Buscar la categoría
     medusa.store.category.list({ handle: categoria })
-      .then(({ product_categories }) => {        
-  
-        if (!product_categories.length) {          
+      .then(({ product_categories }) => {
+        if (!product_categories.length) {
           setIsLoading(false)
           return
-        }  
+        }
         const category = product_categories[0]
   
         return medusa.store.product.list({
-          region_id: DEFAULT_REGION_ID,   
+          category_id: [category.id],
+          region_id: DEFAULT_REGION_ID,
           limit: 50,
-        }).then((allResult: any) => {          
-          return medusa.store.product.list({
-            category_id: [category.id],
-            region_id: DEFAULT_REGION_ID,
-            limit: 50,
-            fields: "*variants.calculated_price,+variants.inventory_quantity,+variants.manage_inventory",
-          })
+          fields: PRODUCT_FIELDS,          
         })
       })
       .then((result: any) => {
+        console.log("brand del primer producto:", result.products[0]?.collection)
         if (!result) return
   
         if (result.products && result.products.length > 0) {
           const mapped = result.products.map(mapProduct)
-  
           setProducts(mapped)
+  
+          const uniqueBrands = [...new Set(
+            mapped
+              .map((p: any) => p.brand)
+              .filter((b: string) => b && b !== "Sin marca")
+          )] as string[]
+          setBrands(uniqueBrands)
+  
+          if (mapped.length > 0) {
+            const prices = mapped.map((p: any) => p.price)
+            setMinPrice(Math.min(...prices))
+            setMaxPrice(Math.max(...prices))
+            setPriceRange([Math.min(...prices), Math.max(...prices)])
+          }
         } else {
           console.warn("No hay productos para esta categoría")
         }
@@ -319,6 +339,7 @@ export default function CategoryPage({ params }: CategoryPageProps) {
               minPrice={minPrice}
               maxPrice={maxPrice}
               onClearFilters={handleClearFilters}
+              onClearBrands={() => setSelectedBrands([])}
             />
 
             <div className="flex-1">

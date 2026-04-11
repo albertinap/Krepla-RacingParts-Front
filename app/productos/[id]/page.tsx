@@ -18,7 +18,6 @@ import { medusa } from "@/lib/medusa"
 import { mapProduct, PRODUCT_FIELDS, MappedProduct } from "@/lib/products"
 
 const DEFAULT_REGION_ID = process.env.NEXT_PUBLIC_DEFAULT_REGION
-const FREE_SHIPPING_THRESHOLD = 150000
 
 function formatPrice(price: number) {
   return new Intl.NumberFormat("es-AR", {
@@ -99,9 +98,9 @@ export default function ProductPage({ params }: ProductPageProps) {
   }
 
   const price = product.variants?.[0]?.calculated_price?.calculated_amount ?? 0
-  const transferPrice = price * 0.84
+  const transferPrice = price * 0.90
   const installmentPrice = price / 3
-  const freeShipping = price >= FREE_SHIPPING_THRESHOLD
+
   const category = product.categories?.[0]
   const image = product.thumbnail ?? "/placeholder.svg?height=600&width=600"
   const variant = product.variants?.[0] || {}
@@ -175,24 +174,12 @@ export default function ProductPage({ params }: ProductPageProps) {
               )}
 
               {/* Precio */}
-              <div className="space-y-2">
+              <div className="space-y-3 py-4 border-y border-border">
                 <span className="text-3xl font-bold">{formatPrice(price)}</span>
                 <p className="text-lg font-semibold text-primary">
-                  {formatPrice(transferPrice)} con -16% DESCUENTO en Transferencia
+                  {formatPrice(transferPrice)} con -10% DESCUENTO en Transferencia
                 </p>
-              </div>
-
-              {/* Opciones de pago y promos */}
-              <div className="space-y-3 py-4 border-y border-border">
-                <div className="flex items-center gap-2 text-sm">
-                  <CreditCard className="h-4 w-4 text-primary" />
-                  <span className="text-primary">3 cuotas sin interés de {formatPrice(installmentPrice)}</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm">
-                  <Percent className="h-4 w-4 text-primary" />
-                  <span className="text-primary">16% de descuento pagando con transferencia</span>
-                </div>
-              </div>              
+              </div>             
 
               {/* Cantidad y agregar */}
               <div className="flex items-center gap-4">
@@ -256,22 +243,7 @@ export default function ProductPage({ params }: ProductPageProps) {
                       </div>
                     </div>
                     <span className="font-semibold text-muted-foreground text-sm">A calcular</span>
-                  </div>
-
-                  <div
-                    className={`flex items-start gap-3 p-4 rounded-lg border cursor-pointer transition-colors ${shippingMethod === "viacargo" ? "border-primary bg-primary/5" : "border-border"}`}
-                    onClick={() => setShippingMethod("viacargo")}
-                  >
-                    <RadioGroupItem value="viacargo" id="viacargo" className="mt-1" />
-                    <div className="flex-1">
-                      <Label htmlFor="viacargo" className="font-medium cursor-pointer">Vía Cargo a domicilio</Label>
-                      <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
-                        <Clock className="h-3 w-3" />
-                        <span>5-7 días hábiles</span>
-                      </div>
-                    </div>
-                    <span className="font-semibold text-muted-foreground text-sm">A calcular</span>
-                  </div>
+                  </div>                  
 
                   <div
                     className={`flex items-start gap-3 p-4 rounded-lg border cursor-pointer transition-colors ${shippingMethod === "pickup" ? "border-primary bg-primary/5" : "border-border"}`}

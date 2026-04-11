@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { X, ChevronRight, Bike, Cog, Wrench, Shield, Sticker, Motorbike, Sparkles, Zap } from "lucide-react"
+import { X, ChevronRight, Bike, Cog, Wrench, Shield, Sticker, Motorbike, Sparkles, Zap, Box } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { medusa } from "@/lib/medusa"
@@ -14,6 +14,7 @@ const categoryIcons: Record<string, any> = {
   "Calcos": Sticker,
   "Manubrios y Accesorios": Sparkles,
   "Competición y Potenciación": Zap,
+  "Kit Plásticos": Box,
 }
 
 interface CategorySidebarProps {

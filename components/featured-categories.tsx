@@ -17,10 +17,10 @@ const featuredCategories = [
     description: "Seguridad certificada",
   },
   {
-    name: "Accesorios",
+    name: "Transmisión",
     image: "https://allmotorsgroup.com.ar/wp-content/uploads/2024/10/Untitled-design-2-jpg.webp",
-    href: "/productos/categoria/accesorios",
-    description: "Personaliza tu moto",
+    href: "/productos/categoria/transmision",
+    description: "Dale potencia a tu moto",
   },
 ]
 

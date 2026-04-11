@@ -1,6 +1,6 @@
 "use client"
 
-import { Bike, Cog, Wrench, Shield, Sticker, Sparkles, Zap } from "lucide-react"
+import { Bike, Cog, Wrench, Shield, Sticker, Sparkles, Zap, Box } from "lucide-react"
 import Link from "next/link"
 
 const popularCategories = [
@@ -11,6 +11,7 @@ const popularCategories = [
   { name: "Calcos", icon: Sticker, href: "/productos/categoria/kit-plasticos" },
   { name: "Manubrios y Accesorios", icon: Sparkles, href: "/productos/categoria/manubrios-y-accesorios" },  
   { name: "Competición y Potenciación", icon: Zap, href: "/productos/categoria/competicion-y-potenciacion" },
+  { name: "Kit Plásticos", icon: Box, href: "/productos/categoria/kit-plasticos" },
 ]
 
 export function PopularCategories() {
@@ -21,7 +22,7 @@ export function PopularCategories() {
           Categorías Populares
         </h2>
         
-        <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide justify-center flex-wrap">
+        <div className="flex gap-10 overflow-x-auto pb-4 scrollbar-hide justify-center flex-wrap">
           {popularCategories.map((category) => {
             const Icon = category.icon
             return (

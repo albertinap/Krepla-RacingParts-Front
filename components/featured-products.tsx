@@ -2,10 +2,10 @@
 
 import Image from "next/image"
 import Link from "next/link"
-import { ShoppingCart, Truck } from "lucide-react"
+import { ShoppingCart } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
+import { Badge } from "@/components/ui/badge"
 import { useCart } from "@/contexts/cart-context"
 import { medusa } from "@/lib/medusa"
 import { useState, useEffect } from "react"
@@ -44,6 +44,7 @@ export function FeaturedProducts() {
     medusa.store.product.list({
       limit: 8,
       region_id: DEFAULT_REGION_ID,
+      fields: "*variants.calculated_price,+variants.inventory_quantity,+variants.manage_inventory",
     } as any)
       .then(({ products: medusaProducts }) => {
         setProducts(medusaProducts)
@@ -63,22 +64,38 @@ export function FeaturedProducts() {
           {isLoading
             ? Array.from({ length: 8 }).map((_, i) => <ProductCardSkeleton key={i} />)
             : products.map((product) => {
-                const price = product.variants?.[0]?.calculated_price?.calculated_amount
-                  ?? product.variants?.[0]?.prices?.[0]?.amount
+                const variant = product.variants?.[0]
+                const price = variant?.calculated_price?.calculated_amount
+                  ?? variant?.prices?.[0]?.amount
                   ?? 0
-                const transferPrice = price * 0.84
-                const installmentPrice = price / 3
-                const freeShipping = price >= 150000
+                const transferPrice = price * 0.90
                 const image = product.thumbnail ?? "/placeholder.svg?height=300&width=300"
+
+                const manageInventory = variant?.manage_inventory ?? false
+                const inventoryQty = variant?.inventory_quantity ?? 0
+                const isOutOfStock = manageInventory && inventoryQty <= 0
+                const isLowStock = manageInventory && inventoryQty > 0 && inventoryQty <= 3
 
                 return (
                   <div
                     key={product.id}
-                    className="bg-card rounded-lg border border-border overflow-hidden group hover:border-primary/50 transition-colors"
+                    className="bg-card rounded-lg border border-border overflow-hidden group hover:border-primary/50 transition-colors relative"
                   >
+                    {isOutOfStock && (
+                      <div className="absolute top-3 left-3 z-10">
+                        <Badge variant="destructive" className="font-medium text-sm px-3 py-1">AGOTADO</Badge>
+                      </div>
+                    )}
+                    {isLowStock && (
+                      <div className="absolute top-3 left-3 z-10">
+                        <Badge className="bg-amber-500 hover:bg-amber-500 text-white font-medium text-sm px-3 py-1">
+                          ¡Últimas {inventoryQty} unidades!
+                        </Badge>
+                      </div>
+                    )}
+
                     <Link href={`/productos/${product.handle}`}>
                       <div className="relative aspect-square bg-white p-4">
-                        
                         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                           <span className="text-6xl font-bold text-gray-200/30 rotate-[-30deg] select-none tracking-widest">
                             KREPLA
@@ -88,7 +105,9 @@ export function FeaturedProducts() {
                           src={image}
                           alt={product.title}
                           fill
-                          className="object-contain p-2 group-hover:scale-105 transition-transform duration-300"
+                          className={`object-contain p-2 transition-transform duration-300 ${
+                            isOutOfStock ? "grayscale" : "group-hover:scale-105"
+                          }`}
                         />
                       </div>
                     </Link>
@@ -102,27 +121,35 @@ export function FeaturedProducts() {
                           {formatPrice(price)}
                         </p>
                         <p className="text-xs text-green-500">
-                          {formatPrice(transferPrice)} con -16% DESCUENTO en Transferencia
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          3 cuotas sin interés de{" "}
-                          <span className="font-semibold text-foreground">
-                            {formatPrice(installmentPrice)}
-                          </span>
+                          {formatPrice(transferPrice)} con -10% DESCUENTO en Transferencia
                         </p>
                       </div>
                       <Button
-                        className="w-full mt-3 bg-primary hover:bg-primary/90 text-primary-foreground text-sm"
-                        onClick={() => addItem({
-                          id: product.id,
-                          name: product.title,
-                          price,
-                          image,                          
-                          variantId: product.variants?.[0]?.id                       
-                        })}
+                        className={`w-full mt-3 text-sm ${
+                          isOutOfStock
+                            ? "bg-muted text-muted-foreground cursor-not-allowed"
+                            : "bg-primary hover:bg-primary/90 text-primary-foreground"
+                        }`}
+                        onClick={() => {
+                          if (isOutOfStock) return
+                          addItem({
+                            id: product.id,
+                            name: product.title,
+                            price,
+                            image,
+                            variantId: variant?.id,
+                          })
+                        }}
+                        disabled={isOutOfStock}
                       >
-                        <ShoppingCart className="h-4 w-4 mr-2" />
-                        Agregar
+                        {isOutOfStock ? (
+                          "Sin stock disponible"
+                        ) : (
+                          <>
+                            <ShoppingCart className="h-4 w-4 mr-2" />
+                            Agregar
+                          </>
+                        )}
                       </Button>
                     </div>
                   </div>
