@@ -9,8 +9,9 @@ import { Header } from "@/components/header"
 import { Navigation } from "@/components/navigation"
 import { Footer } from "@/components/footer"
 import { useState } from "react"
+import { Suspense } from "react"
 
-export default function OrdenConfirmadaPage() {
+function OrdenConfirmadaContent() {
   const searchParams = useSearchParams()
   const orderId = searchParams.get("id")
   const [sidebarOpen, setSidebarOpen] = useState(false)
@@ -41,5 +42,13 @@ export default function OrdenConfirmadaPage() {
       </main>
       <Footer />
     </div>
+  )
+}
+
+export default function OrdenConfirmadaPage() {
+  return (
+    <Suspense fallback={<div>Cargando...</div>}>
+      <OrdenConfirmadaContent />
+    </Suspense>
   )
 }

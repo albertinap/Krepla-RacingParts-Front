@@ -64,7 +64,7 @@ function ProductCard({ product }: { product: MappedProduct }) {
       name: product.name,
       price: product.price,
       image: product.image,
-      variantId: product.variantId, 
+      variantId: product.variantId,  // ← directo, sin optional chaining anidado
     })
   }
 
