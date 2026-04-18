@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server"
-import { sendPasswordReset } from "@/lib/email"
 
 const MEDUSA_BACKEND_URL = process.env.NEXT_PUBLIC_MEDUSA_URL || "http://localhost:9000"
 const MEDUSA_PUBLISHABLE_KEY = process.env.NEXT_PUBLIC_MEDUSA_KEY!
@@ -24,12 +23,8 @@ export async function POST(req: NextRequest) {
       }
     )
 
-    const data = await medusaRes.json()
-
-    if (data.token) {
-      await sendPasswordReset(email, data.token)
-    }
-
+    // Siempre respondemos lo mismo por seguridad
+    // (no revelar si el email existe o no)
     return NextResponse.json({
       message: "Si el email existe, te llegará un enlace en breve.",
     })

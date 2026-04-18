@@ -1,10 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
-import { sendEmailVerification } from "@/lib/email"
-import { SignJWT } from "jose"
 
 const MEDUSA_BACKEND_URL = process.env.NEXT_PUBLIC_MEDUSA_URL || "http://localhost:9000"
 const MEDUSA_PUBLISHABLE_KEY = process.env.NEXT_PUBLIC_MEDUSA_KEY!
-const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET || "supersecret")
 
 export async function POST(req: NextRequest) {  
   try {
@@ -56,30 +53,10 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    const { customer } = await customerRes.json()
-
-    // Paso 3: Guardar email_verified: false en metadata
-    await fetch(`${MEDUSA_BACKEND_URL}/store/customers/me`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-publishable-api-key": MEDUSA_PUBLISHABLE_KEY,
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({ metadata: { email_verified: false } }),
-    })
-    /*// Paso 4: Generar token de verificación (expira en 24hs)
-    const verifyToken = await new SignJWT({ email, customerId: customer.id })
-      .setProtectedHeader({ alg: "HS256" })
-      .setExpirationTime("24h")
-      .sign(JWT_SECRET)
-
-    // Paso 5: Enviar email de verificación
-    await sendEmailVerification(email, verifyToken)*/
-
-    // No devolvemos token de sesión — el usuario debe verificar primero
+    // El email de bienvenida lo manda el subscriber de Medusa
+    // automáticamente cuando se dispara el evento customer.created
     return NextResponse.json({
-      message: "Cuenta creada. Revisá tu email para confirmarla.",
+      message: "Cuenta creada exitosamente.",
     })
   } catch (err) {
     console.error("[REGISTER ERROR]", err)

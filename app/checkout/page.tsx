@@ -599,10 +599,10 @@ export default function CheckoutPage() {
                   {paymentMethod === "transfer" && (
                     <div className="mt-4 p-4 bg-secondary rounded-lg space-y-1">
                       <p className="text-sm font-semibold text-foreground">Datos para transferir:</p>
-                      <p className="text-sm text-muted-foreground">CBU: <span className="text-foreground font-mono">0000000000000000000000</span></p>
-                      <p className="text-sm text-muted-foreground">Alias: <span className="text-foreground font-mono">KREPLA.RACING</span></p>
-                      <p className="text-sm text-muted-foreground">Titular: <span className="text-foreground">Nombre del titular</span></p>
-                      <p className="text-xs text-muted-foreground mt-2">Una vez realizada la transferencia te confirmamos el pedido por email.</p>
+                      <p className="text-sm text-muted-foreground">CBU: <span className="text-foreground font-mono">0000003100068646403979</span></p>
+                      <p className="text-sm text-muted-foreground">Alias: <span className="text-foreground font-mono">nicolas.krepla</span></p>
+                      <p className="text-sm text-muted-foreground">Titular: <span className="text-foreground">Nicolás Kreplansky</span></p>
+                      <p className="text-xs text-muted-foreground mt-2">Realiza tu pago directamente vía transferencia bancaria. Tu pedido no se procesará hasta que se haya recibido el importe en nuestra cuenta.</p>
                     </div>
                   )}
 
@@ -656,9 +656,8 @@ export default function CheckoutPage() {
                     <div className="p-4 bg-secondary rounded-lg">
                       <h3 className="text-[15px] font-semibold text-foreground mb-2">Medio de pago</h3>
                       <p className="text-[15px] text-muted-foreground">
-                        {paymentMethod === "transfer" && "Transferencia bancaria (-16% descuento)"}
+                        {paymentMethod === "transfer" && "Transferencia bancaria (-10% descuento)"}
                         {paymentMethod === "debit" && "Tarjeta de débito"}
-                        {paymentMethod === "credit" && `Tarjeta de crédito (3 cuotas de ${formatPrice(total / 3)})`}
                       </p>
                     </div>
                   </div>

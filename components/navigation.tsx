@@ -14,7 +14,7 @@ import { medusa } from "@/lib/medusa"
 
 const staticNavLinks = [
   { name: "Inicio", href: "/" },
-  { name: "Contacto", href: "/contacto" },
+  { name: "Ubicación y Contacto", href: "/ubicacion-y-contacto" },
   { name: "Quiénes Somos", href: "/quienes-somos" },
   { name: "Cómo Comprar", href: "/como-comprar" },
   { name: "Preguntas Frecuentes", href: "/preguntas-frecuentes" },

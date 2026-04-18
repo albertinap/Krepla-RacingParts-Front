@@ -77,7 +77,7 @@ function UserDropdown() {
  
             <div className="py-1">
               <button
-                onClick={() => { setCuentaOpen(true); setOpen(false) }} // 👈 abre el modal
+                onClick={() => { setCuentaOpen(true); setOpen(false) }} // abre el modal
                 className="flex items-center gap-2 px-4 py-2 text-sm text-foreground hover:bg-secondary transition-colors w-full text-left"
               >
                 <Pencil className="h-4 w-4 text-muted-foreground" />
