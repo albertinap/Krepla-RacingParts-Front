@@ -76,11 +76,7 @@ export function Footer() {
                   Quiénes Somos
                 </Link>
               </li>
-              <li>
-                <Link href="/contacto" className="text-sm text-muted-foreground hover:text-primary transition-colors">
-                  Contacto
-                </Link>
-              </li>
+              
             </ul>
           </div>
 
@@ -89,25 +85,15 @@ export function Footer() {
             <h4 className="font-semibold text-foreground mb-4">Ayuda</h4>
             <ul className="space-y-2">
               <li>
-                <Link href="/como-comprar" className="text-sm text-muted-foreground hover:text-primary transition-colors">
-                  Cómo Comprar
-                </Link>
-              </li>
-              <li>
                 <Link href="/preguntas-frecuentes" className="text-sm text-muted-foreground hover:text-primary transition-colors">
                   Preguntas Frecuentes
                 </Link>
-              </li>
+              </li> 
               <li>
-                <Link href="/envios" className="text-sm text-muted-foreground hover:text-primary transition-colors">
-                  Envíos
+                <Link href="/contacto" className="text-sm text-muted-foreground hover:text-primary transition-colors">
+                  Contacto
                 </Link>
-              </li>
-              <li>
-                <Link href="/devoluciones" className="text-sm text-muted-foreground hover:text-primary transition-colors">
-                  Devoluciones
-                </Link>
-              </li>
+              </li>             
             </ul>
           </div>
 

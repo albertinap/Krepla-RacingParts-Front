@@ -1,7 +1,7 @@
 "use client"
  
 import { useState, useRef, useEffect } from "react"
-import { Search, HelpCircle, User, ShoppingCart, LogOut, ChevronDown, Pencil } from "lucide-react"
+import { Search, HelpCircle, User, ShoppingCart, LogOut, ChevronDown, Pencil, Package } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
@@ -83,6 +83,14 @@ function UserDropdown() {
                 <Pencil className="h-4 w-4 text-muted-foreground" />
                 Editar mis datos
               </button>
+              <Link
+                href="/mis-pedidos"
+                onClick={() => setOpen(false)}
+                className="flex items-center gap-2 px-4 py-2 text-sm text-foreground hover:bg-secondary transition-colors w-full text-left"
+              >
+                <Package className="h-4 w-4 text-muted-foreground" />
+                Mis pedidos
+              </Link>
             </div>
  
             <div className="border-t border-border py-1">
