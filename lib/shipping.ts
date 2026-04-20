@@ -17,43 +17,6 @@ export interface ShippingOption {
 }
 
 // ============================================================
-// TARIFAS FIJAS VÍA CARGO POR ZONA
-// Estas tarifas son reales y se pueden actualizar manualmente
-// cuando Vía Cargo actualice sus precios
-// ============================================================
-
-const VIA_CARGO_TARIFAS: Record<string, { cost: number; days: string }> = {
-  // GBA y Buenos Aires
-  "1000-1999": { cost: 8500, days: "2-3 días hábiles" },
-  "2000-2999": { cost: 9200, days: "3-4 días hábiles" },
-  "7000-8999": { cost: 7800, days: "1-2 días hábiles" }, // Bahía Blanca y zona
-  // Córdoba
-  "5000-5999": { cost: 10500, days: "3-5 días hábiles" },
-  // Rosario / Santa Fe
-  "2000-2399": { cost: 9800, days: "3-4 días hábiles" },
-  // Mendoza
-  "5500-5599": { cost: 12000, days: "4-6 días hábiles" },
-  // Patagonia
-  "8300-9999": { cost: 15000, days: "5-7 días hábiles" },
-  // Noroeste
-  "4000-4999": { cost: 13500, days: "5-7 días hábiles" },
-  // Default — cualquier código postal no mapeado
-  "default": { cost: 11000, days: "4-6 días hábiles" },
-}
-
-function calcularTarifaViaCargo(codigoPostal: string): { cost: number; days: string } {
-  const cp = parseInt(codigoPostal)
-  for (const rango of Object.keys(VIA_CARGO_TARIFAS)) {
-    if (rango === "default") continue
-    const [min, max] = rango.split("-").map(Number)
-    if (cp >= min && cp <= max) {
-      return VIA_CARGO_TARIFAS[rango]
-    }
-  }
-  return VIA_CARGO_TARIFAS["default"]
-}
-
-// ============================================================
 // ANDREANI
 // Docs: https://developers.andreani.com
 // ============================================================
@@ -148,8 +111,6 @@ export async function cotizarEnvio(
   codigoPostalDestino: string
 ): Promise<ShippingOption[]> {
 
-  const tarifaViaCargo = calcularTarifaViaCargo(codigoPostalDestino)
-
   const [andreani, correo] = await Promise.all([
     cotizarAndreani(productos, codigoPostalDestino),
     cotizarCorreo(productos, codigoPostalDestino),
@@ -157,13 +118,7 @@ export async function cotizarEnvio(
 
   return [
     andreani,
-    correo,
-    {
-      id: "via-cargo",
-      name: "Vía Cargo",
-      cost: tarifaViaCargo.cost,
-      days: tarifaViaCargo.days,
-    },
+    correo,    
     {
       id: "retiro-local",
       name: "Retiro en local",

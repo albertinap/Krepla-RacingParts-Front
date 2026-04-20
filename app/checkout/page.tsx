@@ -24,7 +24,6 @@ const DEFAULT_REGION_ID = process.env.NEXT_PUBLIC_DEFAULT_REGION
 const SHIPPING_OPTION_IDS: Record<string, string> = {
   "correo-argentino": "so_01KNHKYJPG3YZCGA7D7CPSQR7T",
   "andreani": "so_01KNHKZ37N0CF0MVY2VHP9XB4A",
-  "via-cargo": "so_01KNHKZQ0JN3AQKX1JZ5W2RZKD",
   "retiro-local": "so_01KNHM0A26AVXXVA4CDAXJJGNS",
 }
 
@@ -123,7 +122,7 @@ function OrderSummary({
         </div>
         {discount > 0 && (
           <div className="flex justify-between text-[15px]">
-            <span className="text-green-500">Descuento (-16%)</span>
+            <span className="text-green-500">Descuento (-10%)</span>
             <span className="text-green-500">-{formatPrice(discount)}</span>
           </div>
         )}
@@ -209,7 +208,7 @@ export default function CheckoutPage() {
   const selectedShipping = shippingOptions.find((m) => m.id === shippingMethod)
   const shippingCost = selectedShipping?.cost || 0
   const subtotal = cartTotal
-  const discount = paymentMethod === "transfer" ? subtotal * 0.16 : 0
+  const discount = paymentMethod === "transfer" ? subtotal * 0.10 : 0
   const total = subtotal + shippingCost - discount
   const isRetiroLocal = shippingMethod === "retiro-local"
 
@@ -576,7 +575,7 @@ export default function CheckoutPage() {
                           <p className="text-sm text-muted-foreground">CBU / Alias — te enviamos los datos por email</p>
                         </div>
                       </div>
-                      <Badge className="bg-green-600 hover:bg-green-600 text-white">-16% descuento</Badge>
+                      <Badge className="bg-green-600 hover:bg-green-600 text-white">-10% descuento</Badge>
                     </label>
 
                     {/* MercadoPago */}

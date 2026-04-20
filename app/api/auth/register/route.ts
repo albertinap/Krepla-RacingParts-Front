@@ -32,7 +32,7 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    const { token } = await registerRes.json()
+    const { token } = await registerRes.json()    
 
     // Paso 2: Crear perfil del customer
     const customerRes = await fetch(`${MEDUSA_BACKEND_URL}/store/customers`, {
@@ -46,9 +46,11 @@ export async function POST(req: NextRequest) {
     })
 
     if (!customerRes.ok) {
-      const error = await customerRes.json()
+      const errorText = await customerRes.text()
+      console.log("[REGISTER] customer status:", customerRes.status)
+      console.log("[REGISTER] customer error:", errorText)
       return NextResponse.json(
-        { error: error.message || "Error al crear perfil" },
+        { error: "Error al crear perfil" },
         { status: customerRes.status }
       )
     }

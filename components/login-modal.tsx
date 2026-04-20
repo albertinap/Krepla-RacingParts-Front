@@ -113,7 +113,7 @@ export function LoginModal() {
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
-
+  
     const digits = registerPhone.replace(/\D/g, "")
     if (registerPhone && digits.length < 8) {
       setError("El teléfono debe tener al menos 8 dígitos")
@@ -127,27 +127,15 @@ export function LoginModal() {
       setError("Las contraseñas no coinciden")
       return
     }
-
+  
     setIsLoading(true)
     try {
       await register(registerName, registerEmail, registerPassword, registerPhone)
-      toast.success("¡Cuenta creada exitosamente!")
-      closeLogin()
+      setSuccessMessage("¡Cuenta creada! Revisá tu casilla de mail para confirmar tu cuenta.")
     } catch (err: any) {
-      const msg = err.message || ""
-      if (msg.includes("Cuenta creada") || msg.includes("Revisá tu email") || msg.includes("email")) {
-        setSuccessMessage(msg)
-      } else {
-        setError(msg)
-      }
+      setError(err.message || "Error al crear la cuenta")
     } finally {
       setIsLoading(false)
-      // En el JSX, debajo del error existente:
-      {successMessage && (
-        <div className="mt-4 rounded-md bg-green-500/10 border border-green-500/30 px-4 py-3 text-sm text-green-600">
-          {successMessage}
-        </div>
-      )}
     }
   }
 
@@ -169,8 +157,14 @@ export function LoginModal() {
           {error && (
             <div className="mt-4 rounded-md bg-destructive/10 border border-destructive/30 px-4 py-3 text-sm text-destructive">
               {error}
-            </div>
+            </div>            
           )}
+          
+          {successMessage && (
+              <div className="mt-4 rounded-md bg-green-500/10 border border-green-500/30 px-4 py-3 text-sm text-green-600">
+                {successMessage}
+              </div>
+            )}
 
           <TabsContent value="login" className="mt-6">
             <form onSubmit={handleLogin}>

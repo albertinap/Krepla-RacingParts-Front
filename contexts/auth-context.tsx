@@ -102,16 +102,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     })
   
     const data = await res.json()
-    console.log("Error recibido:", data.error) // ← agregá esto
+    console.log("Error recibido:", data.error) // debbug
   
     if (!res.ok) {
       throw new Error(traducirError(data.error) || "Error al crear la cuenta")
     }
-  
-    // Ya no guardamos sesión ni cerramos el modal
-    // El usuario debe verificar el email primero
-    // Lanzamos el mensaje como señal para que el modal lo muestre en verde
-    //throw new Error(data.message)
+      
   }
 
   const logout = () => {

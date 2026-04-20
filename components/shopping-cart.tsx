@@ -19,13 +19,7 @@ const SHIPPING_OPTIONS = [
     name: "Andreani",
     description: "Envío a domicilio",
     icon: Truck,
-  },
-  {
-    id: "via-cargo",
-    name: "Vía Cargo",
-    description: "Envío a domicilio",
-    icon: Store,
-  },
+  },  
   {
     id: "correo-argentino",
     name: "Correo Argentino",
