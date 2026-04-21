@@ -146,7 +146,7 @@ export function Header() {
         </div>
  
         <div className="flex items-center gap-2 md:gap-6">
-          <Link href="#" className="flex flex-col items-center text-muted-foreground hover:text-foreground transition-colors">
+          <Link href="/preguntas-frecuentes" className="flex flex-col items-center text-muted-foreground hover:text-foreground transition-colors">
             <HelpCircle className="h-5 w-5 md:h-6 md:w-6" />
             <span className="text-xs hidden md:block">Ayuda</span>
           </Link>
