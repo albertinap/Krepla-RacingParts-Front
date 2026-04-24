@@ -66,12 +66,22 @@ function ProductCardSkeleton() {
   )
 }
 
-function ProductCard({ product, categoria }: { product: any; categoria: string }) {
+function ProductCard({ product, rawVariants }: { product: any; rawVariants: any[] }) {
   const { addItem } = useCart()
-  const isOutOfStock = !product.inStock
+  const [selectedVariantIndex, setSelectedVariantIndex] = useState(0)
 
-  const transferPrice = product.price * 0.90
-  const installmentPrice = product.price / 3
+  const hasVariants = rawVariants.length > 1
+  const selectedVariant = rawVariants[selectedVariantIndex]
+
+  const price = selectedVariant?.calculated_price?.calculated_amount
+    ?? selectedVariant?.prices?.[0]?.amount
+    ?? product.price
+  const transferPrice = price * 0.90
+
+  const manageInventory = selectedVariant?.manage_inventory ?? false
+  const inventoryQty = selectedVariant?.inventory_quantity ?? 0
+  const isOutOfStock = manageInventory ? inventoryQty <= 0 : !product.inStock
+  const isLowStock = manageInventory && inventoryQty > 0 && inventoryQty <= 3
 
   return (
     <div className="bg-card rounded-lg border border-border overflow-hidden group hover:border-primary/50 transition-colors relative">
@@ -80,9 +90,16 @@ function ProductCard({ product, categoria }: { product: any; categoria: string }
           <Badge variant="destructive" className="font-medium text-sm px-3 py-1">AGOTADO</Badge>
         </div>
       )}
+      {isLowStock && (
+        <div className="absolute top-3 left-3 z-10">
+          <Badge className="bg-amber-500 hover:bg-amber-500 text-white font-medium text-sm px-3 py-1">
+            ¡Últimas {inventoryQty} unidades!
+          </Badge>
+        </div>
+      )}
 
       <Link href={`/productos/${product.handle}`}>
-        <div className="relative aspect-square bg-white p-4 overflow-hidden">          
+        <div className="relative aspect-square bg-white p-4 overflow-hidden">
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
             <span className="text-6xl font-bold text-gray-200/30 rotate-[-30deg] select-none tracking-widest">
               KREPLA
@@ -92,7 +109,9 @@ function ProductCard({ product, categoria }: { product: any; categoria: string }
             src={product.image}
             alt={product.name}
             fill
-            className={`object-contain p-2 transition-transform duration-300 ${isOutOfStock ? "grayscale" : "group-hover:scale-105"}`}
+            className={`object-contain p-2 transition-transform duration-300 ${
+              isOutOfStock ? "grayscale" : "group-hover:scale-105"
+            }`}
           />
         </div>
       </Link>
@@ -103,10 +122,29 @@ function ProductCard({ product, categoria }: { product: any; categoria: string }
             {product.name}
           </h3>
         </Link>
-        <p className="text-xl font-bold text-foreground mt-2">{formatPrice(product.price)}</p>
+
+        {hasVariants && (
+          <div className="flex flex-wrap gap-1 mt-1">
+            {rawVariants.map((v: any, i: number) => (
+              <button
+                key={v.id}
+                onClick={() => setSelectedVariantIndex(i)}
+                className={`text-xs border rounded px-2 py-0.5 transition-colors ${
+                  i === selectedVariantIndex
+                    ? "border-primary bg-primary text-primary-foreground"
+                    : "border-border text-muted-foreground hover:border-primary/50"
+                }`}
+              >
+                {v.title}
+              </button>
+            ))}
+          </div>
+        )}
+
+        <p className="text-xl font-bold text-foreground mt-2">{formatPrice(price)}</p>
         <p className="text-sm text-green-500 font-medium mt-1">
           {formatPrice(transferPrice)} con -10% DESCUENTO en Transferencia
-        </p>        
+        </p>
         {product.colors.length > 0 && (
           <div className="flex gap-1 mt-2">
             {product.colors?.map((color: string) => (
@@ -117,13 +155,17 @@ function ProductCard({ product, categoria }: { product: any; categoria: string }
           </div>
         )}
         <Button
-          className={`w-full mt-4 text-[15px] ${isOutOfStock ? "bg-muted text-muted-foreground cursor-not-allowed" : "bg-primary hover:bg-primary/90 text-primary-foreground"}`}
+          className={`w-full mt-4 text-[15px] ${
+            isOutOfStock
+              ? "bg-muted text-muted-foreground cursor-not-allowed"
+              : "bg-primary hover:bg-primary/90 text-primary-foreground"
+          }`}
           onClick={() => !isOutOfStock && addItem({
             id: product.id,
             name: product.name,
-            price: product.price,
+            price,
             image: product.image,
-            variantId: product.variantId,  
+            variantId: selectedVariant?.id ?? product.variantId,
           })}
           disabled={isOutOfStock}
         >
@@ -237,6 +279,7 @@ export default function CategoryPage({ params }: CategoryPageProps) {
   const [minPrice, setMinPrice] = useState(0)
   const [maxPrice, setMaxPrice] = useState(500000)
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [rawVariantsMap, setRawVariantsMap] = useState<Record<string, any[]>>({})
 
   useEffect(() => {
     setIsLoading(true)
@@ -254,7 +297,7 @@ export default function CategoryPage({ params }: CategoryPageProps) {
           category_id: [category.id],
           region_id: DEFAULT_REGION_ID,
           limit: 50,
-          fields: PRODUCT_FIELDS,          
+          fields: `${PRODUCT_FIELDS},*variants.calculated_price,+variants.inventory_quantity,+variants.manage_inventory`,
         })
       })
       .then((result: any) => {
@@ -264,6 +307,9 @@ export default function CategoryPage({ params }: CategoryPageProps) {
         if (result.products && result.products.length > 0) {
           const mapped = result.products.map(mapProduct)
           setProducts(mapped)
+          setRawVariantsMap(
+            Object.fromEntries(result.products.map((p: any) => [p.id, p.variants ?? []]))
+          )
   
           const uniqueBrands = [...new Set(
             mapped
@@ -374,7 +420,7 @@ export default function CategoryPage({ params }: CategoryPageProps) {
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                   {filteredProducts.map((product) => (
-                    <ProductCard key={product.id} product={product} categoria={categoria} />
+                    <ProductCard key={product.id} product={product} rawVariants={rawVariantsMap[product.id] ?? []} />
                   ))}
                 </div>
               )}

@@ -51,19 +51,30 @@ function ProductCardSkeleton() {
   )
 }
 
-function ProductCard({ product }: { product: MappedProduct }) {
+function ProductCard({ product, rawVariants }: { product: MappedProduct; rawVariants: any[] }) {
   const { addItem } = useCart()
-  const transferPrice = product.price * 0.90
-  const isOutOfStock = !product.inStock
+  const [selectedVariantIndex, setSelectedVariantIndex] = useState(0)
+
+  const hasVariants = rawVariants.length > 1
+  const selectedVariant = rawVariants[selectedVariantIndex]
+
+  const price = selectedVariant?.calculated_price?.calculated_amount
+    ?? selectedVariant?.prices?.[0]?.amount
+    ?? product.price
+  const transferPrice = price * 0.90
+  const manageInventory = selectedVariant?.manage_inventory ?? false
+  const inventoryQty = selectedVariant?.inventory_quantity ?? 0
+  const isOutOfStock = manageInventory ? inventoryQty <= 0 : !product.inStock
+  const isLowStock = manageInventory && inventoryQty > 0 && inventoryQty <= 3
 
   const handleAddToCart = () => {
     if (isOutOfStock) return
     addItem({
       id: product.id,
       name: product.name,
-      price: product.price,
+      price,
       image: product.image,
-      variantId: product.variantId,
+      variantId: selectedVariant?.id ?? product.variantId,
     })
   }
 
@@ -72,6 +83,13 @@ function ProductCard({ product }: { product: MappedProduct }) {
       {isOutOfStock && (
         <div className="absolute top-3 left-3 z-10">
           <Badge variant="destructive" className="font-medium text-sm px-3 py-1">AGOTADO</Badge>
+        </div>
+      )}
+      {isLowStock && (
+        <div className="absolute top-3 left-3 z-10">
+          <Badge className="bg-amber-500 hover:bg-amber-500 text-white font-medium text-sm px-3 py-1">
+            ¡Últimas {inventoryQty} unidades!
+          </Badge>
         </div>
       )}
       <Link href={`/productos/${product.handle}`}>
@@ -98,19 +116,29 @@ function ProductCard({ product }: { product: MappedProduct }) {
             {product.name}
           </h3>
         </Link>
-        <p className="text-xl font-bold text-foreground mt-2">{formatPrice(product.price)}</p>
-        <p className="text-sm text-green-500 font-medium mt-1">
-          {formatPrice(transferPrice)} con -10% DESCUENTO en Transferencia
-        </p>        
-        {product.colors.length > 0 && (
-          <div className="flex gap-1 mt-2">
-            {product.colors.map((color) => (
-              <span key={color} className="text-xs text-muted-foreground border border-border rounded px-2 py-0.5">
-                {color}
-              </span>
+
+        {hasVariants && (
+          <div className="flex flex-wrap gap-1 mt-1">
+            {rawVariants.map((v: any, i: number) => (
+              <button
+                key={v.id}
+                onClick={() => setSelectedVariantIndex(i)}
+                className={`text-xs border rounded px-2 py-0.5 transition-colors ${
+                  i === selectedVariantIndex
+                    ? "border-primary bg-primary text-primary-foreground"
+                    : "border-border text-muted-foreground hover:border-primary/50"
+                }`}
+              >
+                {v.title}
+              </button>
             ))}
           </div>
         )}
+
+        <p className="text-xl font-bold text-foreground mt-2">{formatPrice(price)}</p>
+        <p className="text-sm text-green-500 font-medium mt-1">
+          {formatPrice(transferPrice)} con -10% DESCUENTO en Transferencia
+        </p>
         <Button
           className={`w-full mt-4 text-[15px] ${
             isOutOfStock
@@ -229,17 +257,21 @@ export default function AllProductsPage() {
   const [minPrice, setMinPrice] = useState(0)
   const [maxPrice, setMaxPrice] = useState(500000)
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [rawVariantsMap, setRawVariantsMap] = useState<Record<string, any[]>>({})
 
   useEffect(() => {
     medusa.store.product
       .list({
         limit: 100,
         region_id: DEFAULT_REGION_ID,
-        fields: `${PRODUCT_FIELDS},+collection`,
+        fields: `${PRODUCT_FIELDS},+collection,*variants.calculated_price,+variants.inventory_quantity,+variants.manage_inventory`,
       } as any)
       .then(({ products: medusaProducts }) => {
         const mapped = medusaProducts.map(mapProduct)
         setProducts(mapped)
+        setRawVariantsMap(
+          Object.fromEntries(medusaProducts.map((p: any) => [p.id, p.variants ?? []]))
+        )
 
         const uniqueBrands = [...new Set(
           mapped
@@ -352,7 +384,7 @@ export default function AllProductsPage() {
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                   {filteredAndSortedProducts.map((product) => (
-                    <ProductCard key={product.id} product={product} />
+                    <ProductCard key={product.id} product={product} rawVariants={rawVariantsMap[product.id] ?? []} />
                   ))}
                 </div>
               )}

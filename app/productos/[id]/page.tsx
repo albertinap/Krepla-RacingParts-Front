@@ -39,6 +39,7 @@ export default function ProductPage({ params }: ProductPageProps) {
   const [product, setProduct] = useState<any>(null)
   const [isLoading, setIsLoading] = useState(true)
   const { addItem } = useCart()
+  const [selectedVariantIndex, setSelectedVariantIndex] = useState(0)
 
   useEffect(() => {
     medusa.store.product.list({
@@ -97,16 +98,18 @@ export default function ProductPage({ params }: ProductPageProps) {
     )
   }
 
-  const price = product.variants?.[0]?.calculated_price?.calculated_amount ?? 0
+  const variants = product.variants ?? []
+  const hasVariants = variants.length > 1
+  const variant = variants[selectedVariantIndex] ?? {}
+  const price = variant?.calculated_price?.calculated_amount ?? 0
   const transferPrice = price * 0.90
-  const installmentPrice = price / 3
-
+  
   const category = product.categories?.[0]
   const image = product.thumbnail ?? "/placeholder.svg?height=600&width=600"
-  const variant = product.variants?.[0] || {}
   const manageInventory = variant.manage_inventory ?? false
   const inventoryQty = variant.inventory_quantity ?? 0
   const isOutOfStock = manageInventory && inventoryQty <= 0
+  const isLowStock = manageInventory && inventoryQty > 0 && inventoryQty <= 3
 
   const handleAddToCart = () => {
     if (isOutOfStock) return
@@ -120,7 +123,7 @@ export default function ProductPage({ params }: ProductPageProps) {
     
     addItem({
       id: product.id,
-      variantId: product.variants?.[0]?.id,
+      variantId: variant?.id,
       name: product.title,
       price,
       image,      
@@ -167,9 +170,31 @@ export default function ProductPage({ params }: ProductPageProps) {
             {/* Detalle */}
             <div className="space-y-6">
               <h1 className="text-2xl md:text-3xl font-bold text-foreground">{product.title}</h1>
+              {hasVariants && (
+                <div className="flex flex-wrap gap-2">
+                  {variants.map((v: any, i: number) => (
+                    <button
+                      key={v.id}
+                      onClick={() => setSelectedVariantIndex(i)}
+                      className={`text-sm border rounded px-3 py-1 transition-colors ${
+                        i === selectedVariantIndex
+                          ? "border-primary bg-primary text-primary-foreground"
+                          : "border-border text-muted-foreground hover:border-primary/50"
+                      }`}
+                    >
+                      {v.title}
+                    </button>
+                  ))}
+                </div>
+              )}
               {isOutOfStock && (
                 <div className="inline-block bg-red-600 text-white text-sm font-bold px-6 py-2 rounded-md mb-2">
                   AGOTADO - Sin stock disponible
+                </div>
+              )}
+              {isLowStock && (
+                <div className="inline-block bg-amber-500 text-white text-sm font-bold px-6 py-2 rounded-md mb-2">
+                  ¡Últimas {inventoryQty} unidades disponibles!
                 </div>
               )}
 
