@@ -7,88 +7,49 @@ export interface ShippingOption {
   days: string
 }
 
-// ============================================================
-// TARIFAS — actualizar trimestralmente
-// Relevadas en abril 2026 desde calculadora Andreani
-// CP origen: 8000 (Bahía Blanca)
-// ============================================================
-
-const TARIFAS = {
-  andreani: {
-    zona1: 18323,
-    zona2: 20520,
-    zona3: 22596,
-  },
-  correo: {
-    zona1: 15600,
-    zona2: 17500,
-    zona3: 19200,
-  },
-}
-
-// ============================================================
-// ZONAS POR RANGO DE CP (4 dígitos)
-// Zona 1: Centro/Cuyo/Litoral
-// Zona 2: NOA/NEA
-// Zona 3: Patagonia
-// ============================================================
-
-function getZona(cp: string): "zona1" | "zona2" | "zona3" {
-  const n = parseInt(cp, 10)
-  if (isNaN(n)) return "zona1"
-
-  // Patagonia
-  if (
-    (n >= 8300 && n <= 8399) || // Neuquén
-    (n >= 8300 && n <= 8500) || // Río Negro
-    (n >= 9000 && n <= 9299) || // Chubut
-    (n >= 9300 && n <= 9499) || // Santa Cruz
-    (n >= 9400 && n <= 9499) || // Bariloche zona
-    (n >= 9500 && n <= 9999)    // Tierra del Fuego
-  ) return "zona3"
-
-  // NOA / NEA
-  if (
-    (n >= 4600 && n <= 4799) || // Jujuy
-    (n >= 4400 && n <= 4599) || // Salta
-    (n >= 4000 && n <= 4399) || // Tucumán / Catamarca / La Rioja / Santiago
-    (n >= 3500 && n <= 3799) || // Chaco / Formosa
-    (n >= 3300 && n <= 3499) || // Misiones
-    (n >= 3400 && n <= 3499)    // Corrientes
-  ) return "zona2"
-
-  // Todo lo demás: Zona 1
-  return "zona1"
-}
-
-// ============================================================
-// FUNCIÓN PRINCIPAL
-// ============================================================
-
 export async function cotizarEnvio(
   productos: CartItem[],
-  codigoPostalDestino: string
+  provincia: string
 ): Promise<ShippingOption[]> {
-  const zona = getZona(codigoPostalDestino)
+  const pesoGramos = productos.reduce(
+    (acc, item) => acc + (item.weight ?? 500) * item.quantity, 0
+  )
+  const volumenCC = productos.reduce(
+    (acc, item) =>
+      acc + ((item.length ?? 10) * (item.width ?? 10) * (item.height ?? 10)) * item.quantity,
+    0
+  )
+
+  const params = new URLSearchParams({
+    provincia,
+    peso_gramos: String(pesoGramos),
+    volumen_cc: String(volumenCC),
+  })
+  console.log("URL:", `${process.env.NEXT_PUBLIC_MEDUSA_URL}/store/shipping-quote?${params}`)
+
+  const res = await fetch(
+    `/api/shipping-quote?${params}`
+  )
+
+  if (!res.ok) {
+    const err = await res.json()
+    throw new Error(err.error ?? "Error al cotizar envío")
+  }
+
+  const { estimates } = await res.json()
 
   return [
     {
       id: "andreani",
       name: "Andreani",
-      cost: TARIFAS.andreani[zona],
+      cost: estimates.find((e: any) => e.carrier === "andreani")?.precio_estimado ?? 0,
       days: "3-5 días hábiles",
     },
     {
       id: "correo-argentino",
       name: "Correo Argentino",
-      cost: TARIFAS.correo[zona],
+      cost: estimates.find((e: any) => e.carrier === "correo_argentino")?.precio_estimado ?? 0,
       days: "7-10 días hábiles",
-    },
-    {
-      id: "retiro-local",
-      name: "Retiro en local",
-      cost: 0,
-      days: "Disponible en 24hs",
     },
   ]
 }

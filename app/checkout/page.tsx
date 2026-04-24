@@ -26,6 +26,32 @@ const SHIPPING_OPTION_IDS: Record<string, string> = {
   "andreani": "so_01KNHKZ37N0CF0MVY2VHP9XB4A",
   "retiro-local": "so_01KNHM0A26AVXXVA4CDAXJJGNS",
 }
+const PROVINCIAS_AR = [
+  "Buenos Aires",
+  "Ciudad Autónoma de Buenos Aires",
+  "Catamarca",
+  "Chaco",
+  "Chubut",
+  "Córdoba",
+  "Corrientes",
+  "Entre Ríos",
+  "Formosa",
+  "Jujuy",
+  "La Pampa",
+  "La Rioja",
+  "Mendoza",
+  "Misiones",
+  "Neuquén",
+  "Río Negro",
+  "Salta",
+  "San Juan",
+  "San Luis",
+  "Santa Cruz",
+  "Santa Fe",
+  "Santiago del Estero",
+  "Tierra del Fuego",
+  "Tucumán",
+]
  
 const TRANSFER_DATA = {
   cbu: "0000003100068646403979",
@@ -195,21 +221,26 @@ export default function CheckoutPage() {
   // Step 3: pago
   const [paymentMethod, setPaymentMethod] = useState<"transfer" | "mercadopago">("transfer")
  
-  const handlePostalCodeChange = async (value: string) => {
+  const handlePostalCodeChange = (value: string) => {
     setShippingAddress(prev => ({ ...prev, postalCode: value }))
     setShippingQuoted(false)
     setShippingMethod("")
-    if (value.length === 4) {
-      setLoadingShipping(true)
-      try {
-        const opciones = await cotizarEnvio(items, value)
-        setShippingOptions(opciones)
-        setShippingQuoted(true)
-      } catch (e) {
-        console.error("Error cotizando envío:", e)
-      } finally {
-        setLoadingShipping(false)
-      }
+  }
+  
+  const handleProvinciaChange = async (value: string) => {
+    setShippingAddress(prev => ({ ...prev, province: value }))
+    setShippingQuoted(false)
+    setShippingMethod("")
+    if (!value) return
+    setLoadingShipping(true)
+    try {
+      const opciones = await cotizarEnvio(items, value)
+      setShippingOptions(opciones)
+      setShippingQuoted(true)
+    } catch (e) {
+      console.error("Error cotizando envío:", e)
+    } finally {
+      setLoadingShipping(false)
     }
   }
  
@@ -449,8 +480,19 @@ export default function CheckoutPage() {
                           <Input value={shippingAddress.city} onChange={e => setShippingAddress(p => ({ ...p, city: e.target.value }))} className="mt-2 bg-secondary border-border text-[15px]" placeholder="Buenos Aires" />
                         </div>
                         <div>
-                          <Label className="text-[15px]">Provincia</Label>
-                          <Input value={shippingAddress.province} onChange={e => setShippingAddress(p => ({ ...p, province: e.target.value }))} className="mt-2 bg-secondary border-border text-[15px]" placeholder="CABA" />
+                          <Label className="text-[15px]">
+                            Provincia {loadingShipping && <Loader2 className="inline ml-2 h-3 w-3 animate-spin" />}
+                          </Label>
+                          <select
+                            value={shippingAddress.province}
+                            onChange={e => handleProvinciaChange(e.target.value)}
+                            className="mt-2 w-full rounded-md border border-border bg-secondary px-3 py-2 text-[15px] text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                          >
+                            <option value="">Seleccioná una provincia</option>
+                            {PROVINCIAS_AR.map(p => (
+                              <option key={p} value={p}>{p}</option>
+                            ))}
+                          </select>
                         </div>
                         <div>
                           <Label className="text-[15px]">
