@@ -43,13 +43,13 @@ export async function cotizarEnvio(
       id: "andreani",
       name: "Andreani",
       cost: estimates.find((e: any) => e.carrier === "andreani")?.precio_estimado ?? 0,
-      days: "3-5 días hábiles",
+      days: "3-7 días hábiles",
     },
     {
       id: "correo-argentino",
       name: "Correo Argentino",
       cost: estimates.find((e: any) => e.carrier === "correo_argentino")?.precio_estimado ?? 0,
-      days: "7-10 días hábiles",
+      days: "3-7 días hábiles",
     },
   ]
 }

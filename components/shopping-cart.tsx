@@ -11,7 +11,6 @@ import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet"
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 
-const FREE_SHIPPING_THRESHOLD = 150000
 
 const SHIPPING_OPTIONS = [
   {
@@ -19,12 +18,14 @@ const SHIPPING_OPTIONS = [
     name: "Andreani",
     description: "Envío a domicilio",
     icon: Truck,
+    eta: "3 a 7 días hábiles",
   },  
   {
     id: "correo-argentino",
     name: "Correo Argentino",
     description: "Envío a domicilio",
     icon: Truck,
+    eta: "3 a 7 días hábiles",
   },
   {
     id: "retiro-local",
@@ -32,6 +33,7 @@ const SHIPPING_OPTIONS = [
     description: "CUBA 1348, Bahía Blanca (CP: 8000)",
     icon: MapPin,
     cost: 0,
+    eta: null,
   },
 ]
 
@@ -45,18 +47,14 @@ function formatPrice(price: number) {
 
 export function ShoppingCart() {
   const { items, isOpen, closeCart, updateQuantity, removeItem, total, postalCode, setPostalCode } = useCart()
-  const [shippingMethod, setShippingMethod] = useState("andreani")
-  const [editingPostalCode, setEditingPostalCode] = useState(false)
   const [tempPostalCode, setTempPostalCode] = useState(postalCode)
   const router = useRouter()
 
-  const selectedShipping = SHIPPING_OPTIONS.find((o) => o.id === shippingMethod)
-  const shippingCost = shippingMethod === "retiro-local" ? 0 : null
-  const discountedTotal = (total + (shippingCost ?? 0)) * 0.84
+  
+  const discountedTotal = (total) * 0.90
 
   const handleSavePostalCode = () => {
     setPostalCode(tempPostalCode)
-    setEditingPostalCode(false)
   }
 
   return (
@@ -107,76 +105,35 @@ export function ShoppingCart() {
 
               {/* Subtotal */}
               <div className="flex items-center justify-between text-sm pt-2">
-                <span className="text-muted-foreground">Subtotal (sin envío):</span>
+                <span className="text-base text-muted-foreground">Subtotal (sin envío):</span>
                 <span className="font-semibold">{formatPrice(total)}</span>
-              </div>
-
-              {/* Código postal */}
-              <div className="p-3 bg-secondary rounded-lg space-y-2">
-                <p className="text-sm text-muted-foreground">
-                  Calculando envío para CP:
-                </p>
-                {editingPostalCode ? (
-                  <div className="flex gap-2">
-                    <Input
-                      value={tempPostalCode}
-                      onChange={(e) => setTempPostalCode(e.target.value)}
-                      className="h-8 text-sm"
-                      maxLength={8}
-                      onKeyDown={(e) => e.key === "Enter" && handleSavePostalCode()}
-                      autoFocus
-                    />
-                    <Button size="icon" className="h-8 w-8" onClick={handleSavePostalCode}>
-                      <Check className="h-4 w-4" />
-                    </Button>
-                  </div>
-                ) : (
-                  <div className="flex items-center gap-2">
-                    <span className="font-semibold text-foreground">{postalCode}</span>
-                    <Button variant="ghost" size="icon" className="h-6 w-6"
-                      onClick={() => { setTempPostalCode(postalCode); setEditingPostalCode(true) }}>
-                      <Edit2 className="h-3 w-3" />
-                    </Button>
-                  </div>
-                )}
-              </div>
+              </div>           
 
               {/* Opciones de envío */}
               <div className="space-y-2">
-                <p className="text-sm font-medium text-foreground">Método de envío:</p>
-                <RadioGroup value={shippingMethod} onValueChange={setShippingMethod} className="space-y-2">
-                  {SHIPPING_OPTIONS.map((option) => {
-                    const Icon = option.icon
-                    return (
-                      <div
-                        key={option.id}
-                        className={`flex items-center justify-between p-3 rounded-lg border cursor-pointer transition-colors ${
-                          shippingMethod === option.id ? "border-primary bg-primary/5" : "border-border"
-                        }`}
-                        onClick={() => setShippingMethod(option.id)}
-                      >
-                        <div className="flex items-center gap-3">
-                          <RadioGroupItem value={option.id} id={option.id} />
-                          <Icon className="h-4 w-4 text-muted-foreground" />
-                          <div>
-                            <Label htmlFor={option.id} className="font-medium cursor-pointer text-sm">
-                              {option.name}
-                            </Label>
-                            <p className="text-xs text-muted-foreground">{option.description}</p>
-                          </div>
+                <p className="text-base font-medium text-foreground">Método de envío:</p>                
+                {SHIPPING_OPTIONS.map((option) => {
+                  const Icon = option.icon
+                  return (
+                    <div key={option.id} className="flex items-center justify-between p-3 rounded-lg border border-border">
+                      <div className="flex items-center gap-3">
+                        <Icon className="h-4 w-4 text-muted-foreground" />
+                        <div>
+                          <p className="font-medium text-base">{option.name}</p>
+                          <p className="text-xs text-muted-foreground">{option.description}</p>
                         </div>
-                        <span className="text-sm font-medium text-muted-foreground">
-                          {option.id === "retiro-local" ? (
-                            <span className="text-primary font-semibold">Gratis</span>
-                          ) : (
-                            "A calcular"
-                          )}
-                        </span>
                       </div>
-                    )
-                  })}
-                </RadioGroup>
-                <p className="text-xs text-muted-foreground">
+                      <span className="text-sm font-medium text-right">
+                        {option.id === "retiro-local" ? (
+                          <span className="text-primary font-semibold">Gratis</span>
+                        ) : (
+                          <span className="text-muted-foreground">{option.eta}</span>
+                        )}
+                      </span>
+                    </div>
+                  )
+                })}
+                <p className="text-sm text-muted-foreground">
                   El tiempo de entrega <strong className="text-foreground">no considera feriados</strong>.
                 </p>
               </div>
@@ -190,20 +147,11 @@ export function ShoppingCart() {
             <div className="space-y-2">
               <div className="flex items-center justify-between text-lg font-semibold">
                 <span>Total:</span>
-                <span>
-                  {shippingCost === null
-                    ? `${formatPrice(total)} + envío`
-                    : formatPrice(total + shippingCost)
-                  }
-                </span>
+                <span>{formatPrice(total)} + envío</span>
               </div>
-              <div className="text-sm text-primary">
-                O {formatPrice(discountedTotal)} con -16% DESCUENTO en Transferencia
-              </div>
-              <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                <span className="bg-primary/20 text-primary px-1.5 py-0.5 rounded text-[10px] font-bold">GO</span>
-                <span>Cuotas SIN interés con <strong className="text-foreground">DÉBITO</strong></span>
-              </div>
+              <div className="text-base text-primary">
+                O {formatPrice(discountedTotal)} con -10% DESCUENTO en Transferencia
+              </div>             
             </div>
 
             <Button

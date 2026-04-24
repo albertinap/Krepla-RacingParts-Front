@@ -201,6 +201,7 @@ export default function CheckoutPage() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [currentStep, setCurrentStep] = useState(1)
   const [isConfirming, setIsConfirming] = useState(false)
+  const [quotedPostalCode, setQuotedPostalCode] = useState("")
  
   const [personalInfo, setPersonalInfo] = useState({
     firstName: user?.name?.split(" ")[0] ?? "",
@@ -223,8 +224,6 @@ export default function CheckoutPage() {
  
   const handlePostalCodeChange = (value: string) => {
     setShippingAddress(prev => ({ ...prev, postalCode: value }))
-    setShippingQuoted(false)
-    setShippingMethod("")
   }
   
   const handleProvinciaChange = async (value: string) => {
@@ -237,6 +236,8 @@ export default function CheckoutPage() {
       const opciones = await cotizarEnvio(items, value)
       setShippingOptions(opciones)
       setShippingQuoted(true)
+      setQuotedPostalCode(shippingAddress.postalCode)
+      setQuotedPostalCode(shippingAddress.postalCode)
     } catch (e) {
       console.error("Error cotizando envío:", e)
     } finally {
@@ -427,7 +428,7 @@ export default function CheckoutPage() {
                   {/* Elegir tipo de entrega */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
                     <button
-                      onClick={() => { setDeliveryType("domicilio"); setShippingMethod(""); setShippingQuoted(false) }}
+                      onClick={() => { if (deliveryType !== "domicilio") { setDeliveryType("domicilio"); setShippingMethod(""); setShippingQuoted(false) } }}
                       className={`flex items-center gap-4 p-4 rounded-lg border text-left transition-colors ${deliveryType === "domicilio" ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"}`}
                     >
                       <Truck className="h-5 w-5 text-primary shrink-0" />

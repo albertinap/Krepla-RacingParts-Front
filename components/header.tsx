@@ -9,6 +9,7 @@ import Image from "next/image"
 import { useCart } from "@/contexts/cart-context"
 import { useAuth } from "@/contexts/auth-context"
 import CuentaModal from "@/components/cuenta-modal" 
+import { useRouter } from "next/navigation"
  
 function UserDropdown() {
   const { user, logout, openLogin } = useAuth()
@@ -114,6 +115,14 @@ function UserDropdown() {
  
 export function Header() {
   const { openCart, itemCount } = useCart()
+  const router = useRouter()
+  const [searchQuery, setSearchQuery] = useState("")
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!searchQuery.trim()) return
+    router.push(`/buscar?q=${encodeURIComponent(searchQuery.trim())}`)
+  }
  
   return (
     <header className="bg-background border-b border-border py-4 px-4">
@@ -130,19 +139,22 @@ export function Header() {
         </Link>
  
         <div className="flex-1 max-w-2xl hidden sm:block">
-          <div className="relative">
+          <form onSubmit={handleSearch} className="relative">
             <Input
               type="text"
               placeholder="¿Qué estás buscando?"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-4 pr-12 py-3 bg-secondary border-border text-foreground placeholder:text-muted-foreground rounded-lg"
             />
             <Button
+              type="submit"
               size="icon"
               className="absolute right-1 top-1/2 -translate-y-1/2 bg-primary hover:bg-primary/90"
             >
               <Search className="h-4 w-4" />
             </Button>
-          </div>
+          </form>
         </div>
  
         <div className="flex items-center gap-2 md:gap-6">
@@ -169,19 +181,22 @@ export function Header() {
       </div>
  
       <div className="sm:hidden mt-4">
-        <div className="relative">
+        <form onSubmit={handleSearch} className="relative">
           <Input
             type="text"
             placeholder="¿Qué estás buscando?"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full pl-4 pr-12 py-3 bg-secondary border-border text-foreground placeholder:text-muted-foreground rounded-lg"
           />
           <Button
+            type="submit"
             size="icon"
             className="absolute right-1 top-1/2 -translate-y-1/2 bg-primary hover:bg-primary/90"
           >
             <Search className="h-4 w-4" />
           </Button>
-        </div>
+        </form>
       </div>
     </header>
   )
