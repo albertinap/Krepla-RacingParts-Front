@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useMemo } from "react"
+import { useState, useEffect, useMemo, Suspense } from "react"
 import { useSearchParams } from "next/navigation"
 import Link from "next/link"
 import Image from "next/image"
@@ -142,7 +142,7 @@ function ProductCard({ product, rawVariants }: { product: MappedProduct; rawVari
   )
 }
 
-export default function SearchPage() {
+function SearchPageInner() {
   const searchParams = useSearchParams()
   const query = searchParams.get("q") ?? ""
 
@@ -228,5 +228,13 @@ export default function SearchPage() {
 
       <Footer />
     </div>
+  )
+}
+
+export default function SearchPage() {
+  return (
+    <Suspense>
+      <SearchPageInner />
+    </Suspense>
   )
 }
