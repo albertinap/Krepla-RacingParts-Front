@@ -45,4 +45,4 @@ export interface MappedProduct {
     }
   }
   
-  export const PRODUCT_FIELDS = "*variants.calculated_price,+variants.inventory_quantity,+variants.manage_inventory,+collection"
+  export const PRODUCT_FIELDS = "*variants.calculated_price,+variants.inventory_quantity,+variants.manage_inventory,+collection,+images,+thumbnail"

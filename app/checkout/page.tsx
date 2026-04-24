@@ -321,11 +321,14 @@ export default function CheckoutPage() {
           fields: "+payment_collection.payment_sessions.*"
         })
         const session = cartWithPayment.payment_collection?.payment_sessions?.[0]
+        console.log("[MP] session completa:", JSON.stringify(session))
+        console.log("[MP] session.data:", JSON.stringify(session?.data))
         const checkoutUrl = session?.data?.checkoutUrl as string | undefined
         if (!checkoutUrl) throw new Error("No se pudo obtener la URL de MercadoPago")
         sessionStorage.setItem("pending_cart_id", cart.id)
         clearCart()
-        window.location.href = checkoutUrl
+        const separator = checkoutUrl.includes("?") ? "&" : "?"
+        window.location.href = `${checkoutUrl}`
       }
     } catch (error) {
       console.error("Error al confirmar pedido:", error)

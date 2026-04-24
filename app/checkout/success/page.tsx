@@ -9,7 +9,8 @@ export default function CheckoutSuccessPage() {
   const [error, setError] = useState(false)
 
   useEffect(() => {
-    const cartId = sessionStorage.getItem("pending_cart_id")
+    const params = new URLSearchParams(window.location.search)
+    const cartId = params.get("cart_id") || sessionStorage.getItem("pending_cart_id")
     if (!cartId) {
       router.push("/")
       return

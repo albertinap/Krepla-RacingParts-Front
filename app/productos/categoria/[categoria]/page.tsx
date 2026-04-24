@@ -297,15 +297,17 @@ export default function CategoryPage({ params }: CategoryPageProps) {
           category_id: [category.id],
           region_id: DEFAULT_REGION_ID,
           limit: 50,
-          fields: `${PRODUCT_FIELDS},*variants.calculated_price,+variants.inventory_quantity,+variants.manage_inventory`,
+          fields: `${PRODUCT_FIELDS},*variants.calculated_price,+variants.inventory_quantity,+variants.manage_inventory,+images,+thumbnail`,
         })
       })
       .then((result: any) => {
         console.log("brand del primer producto:", result.products[0]?.collection)
+        console.log("thumbnail del tercer producto:", result.products[0]?.thumbnail)
+        console.log("tercer producto completo:", JSON.stringify(result.products[0], null, 2))
         if (!result) return
   
         if (result.products && result.products.length > 0) {
-          const mapped = result.products.map(mapProduct)
+          const mapped = result.products.map(mapProduct)          
           setProducts(mapped)
           setRawVariantsMap(
             Object.fromEntries(result.products.map((p: any) => [p.id, p.variants ?? []]))

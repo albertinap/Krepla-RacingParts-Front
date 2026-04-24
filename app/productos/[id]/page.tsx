@@ -40,12 +40,13 @@ export default function ProductPage({ params }: ProductPageProps) {
   const [isLoading, setIsLoading] = useState(true)
   const { addItem } = useCart()
   const [selectedVariantIndex, setSelectedVariantIndex] = useState(0)
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0)
 
   useEffect(() => {
     medusa.store.product.list({
       handle: id,
       region_id: DEFAULT_REGION_ID,
-      fields: "*variants.calculated_price,+variants.inventory_quantity,+variants.manage_inventory"
+      fields: "*variants.calculated_price,+variants.inventory_quantity,+variants.manage_inventory,+images"
     } as any)
       .then(({ products }) => {
         const found = products.find((p: any) => p.handle === id)
@@ -105,7 +106,12 @@ export default function ProductPage({ params }: ProductPageProps) {
   const transferPrice = price * 0.90
   
   const category = product.categories?.[0]
-  const image = product.thumbnail ?? "/placeholder.svg?height=600&width=600"
+  const images = [
+    ...(product.images?.map((img: any) => img.url) ?? []),
+    product.thumbnail,
+  ].filter(Boolean)
+  
+  const image = images.length > 0 ? images[selectedImageIndex] : "/placeholder.svg?height=600&width=600"
   const manageInventory = variant.manage_inventory ?? false
   const inventoryQty = variant.inventory_quantity ?? 0
   const isOutOfStock = manageInventory && inventoryQty <= 0
@@ -163,8 +169,25 @@ export default function ProductPage({ params }: ProductPageProps) {
         <div className="max-w-7xl mx-auto px-4 pb-12">
           <div className="grid lg:grid-cols-2 gap-8">
             {/* Imagen */}
-            <div className="relative aspect-square bg-card rounded-lg overflow-hidden">
-              <Image src={image} alt={product.title} fill className="object-contain p-8" priority />              
+            <div className="flex flex-col gap-3">
+              <div className="relative aspect-square bg-card rounded-lg overflow-hidden">
+                <Image src={image} alt={product.title} fill className="object-contain p-8" priority />
+              </div>
+              {images.length > 1 && (
+                <div className="flex gap-2 overflow-x-auto pb-1">
+                  {images.map((img: string, i: number) => (
+                    <button
+                      key={i}
+                      onClick={() => setSelectedImageIndex(i)}
+                      className={`relative w-16 h-16 shrink-0 rounded-md overflow-hidden border-2 transition-colors ${
+                        i === selectedImageIndex ? "border-primary" : "border-border hover:border-primary/50"
+                      }`}
+                    >
+                      <Image src={img} alt={`${product.title} ${i + 1}`} fill className="object-contain p-1" />
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* Detalle */}
