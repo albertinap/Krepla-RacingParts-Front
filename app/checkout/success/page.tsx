@@ -18,6 +18,27 @@ export default function CheckoutSuccessPage() {
 
     const completeOrder = async () => {
       try {
+        const paymentId = params.get("payment_id")
+        const status = params.get("status")
+    
+        if (status !== "approved" || !paymentId) {
+          router.push("/checkout/failure")
+          return
+        }
+    
+        // Actualizar la sesión con el payment_id real de MP
+        await fetch(`${process.env.NEXT_PUBLIC_MEDUSA_URL}/store/carts/${cartId}/payment-sessions`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "x-publishable-api-key": process.env.NEXT_PUBLIC_MEDUSA_KEY!,
+          },
+          body: JSON.stringify({
+            provider_id: "pp_mercadopago_mercadopago",
+            data: { mp_payment_id: paymentId },
+          }),
+        })
+    
         const res = await fetch(`${process.env.NEXT_PUBLIC_MEDUSA_URL}/store/carts/${cartId}/complete`, {
           method: "POST",
           headers: {
@@ -26,9 +47,9 @@ export default function CheckoutSuccessPage() {
           },
         })
         const data = await res.json()
-
+    
         if (!res.ok) throw new Error(JSON.stringify(data))
-
+    
         sessionStorage.removeItem("pending_cart_id")
         router.push(`/orden-confirmada?id=${data.order.id}`)
       } catch (err) {
