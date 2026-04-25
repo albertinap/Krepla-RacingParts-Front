@@ -106,10 +106,10 @@ export default function ProductPage({ params }: ProductPageProps) {
   const transferPrice = price * 0.90
   
   const category = product.categories?.[0]
-  const images = [
-    ...(product.images?.map((img: any) => img.url) ?? []),
-    product.thumbnail,
-  ].filter(Boolean)
+  const imageUrls = product.images?.map((img: any) => img.url) ?? []
+  const images = imageUrls.length > 0
+    ? imageUrls
+    : [product.thumbnail].filter(Boolean)
   
   const image = images.length > 0 ? images[selectedImageIndex] : "/placeholder.svg?height=600&width=600"
   const manageInventory = variant.manage_inventory ?? false
