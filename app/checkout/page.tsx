@@ -1,7 +1,7 @@
 "use client"
  
 import { medusa } from "@/lib/medusa"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { ChevronRight, Check, Truck, MapPin, CreditCard, Package, Loader2, Building2, Copy, CheckCheck } from "lucide-react"
@@ -197,7 +197,7 @@ function OrderSummary({ subtotal, shippingCost, discount, total, paymentMethod }
 export default function CheckoutPage() {
   const { items, total: cartTotal, clearCart } = useCart()
   const router = useRouter()
-  const { user } = useAuth()
+  const { user, openLogin } = useAuth()
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [currentStep, setCurrentStep] = useState(1)
   const [isConfirming, setIsConfirming] = useState(false)
@@ -218,6 +218,12 @@ export default function CheckoutPage() {
   const [shippingOptions, setShippingOptions] = useState<ShippingOption[]>([])
   const [loadingShipping, setLoadingShipping] = useState(false)
   const [shippingQuoted, setShippingQuoted] = useState(false)
+  useEffect(() => {
+    if (!user) {
+      openLogin()
+      router.push("/")
+    }
+  }, [user, router])
  
   // Step 3: pago
   const [paymentMethod, setPaymentMethod] = useState<"transfer" | "mercadopago">("transfer")

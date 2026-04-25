@@ -62,7 +62,7 @@ export default function CheckoutSuccessPage() {
     <div className="min-h-screen bg-background flex items-center justify-center">
       <div className="text-center">
         <Loader2 className="h-10 w-10 animate-spin text-primary mx-auto mb-4" />
-        <p className="text-muted-foreground">Confirmando tu pedido...</p>
+        <p className="text-muted-foreground">Confirmando tu pedido, esto puede demorar unos segundos...</p>
       </div>
     </div>
   )
