@@ -31,7 +31,7 @@ export interface MappedProduct {
         ?? variant?.calculated_price?.original_amount
         ?? variant?.prices?.[0]?.amount
         ?? 0,
-      image: p.thumbnail ?? "/placeholder.svg?height=300&width=300",
+        image: p.thumbnail ?? p.images?.[0]?.url ?? "/placeholder.svg?height=300&width=300",
       brand: p.collection?.title ?? "Sin marca",
       category: p.categories?.[0]?.name ?? "",
       createdAt: new Date(p.created_at),
