@@ -177,7 +177,9 @@ export default function MisPedidosPage() {
     fetchOrders()
   }, [user, token, router])
 
-  const pedidosActivos = orders.filter(o => o.status !== "cancelled" && o.fulfillment_status !== "delivered")
+  const pedidosActivos = orders
+  .filter(o => o.status !== "cancelled" && o.fulfillment_status !== "delivered")
+  .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
   const pedidosHistorial = orders.filter(o => o.status === "cancelled" || o.fulfillment_status === "delivered")
 
   return (
