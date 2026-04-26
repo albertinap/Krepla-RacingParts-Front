@@ -131,9 +131,9 @@ export function Header() {
           <Image
             src="/logo.png"
             alt="Krepla Racing Parts"
-            width={150}
-            height={50}
-            className="h-auto w-[150px] object-contain"
+            width={250}
+            height={150}
+            className="h-auto w-[300px] object-contain"
             priority
           />
         </Link>

@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
 import { FieldGroup, Field, FieldLabel } from "@/components/ui/field"
 import toast from "react-hot-toast"
+import { useRouter } from "next/navigation"
 
 function PasswordInput({
   id,
@@ -65,6 +66,7 @@ function getPasswordStrength(pass: string): { score: number; label: string; colo
 
 export function LoginModal() {
   const { isLoginOpen, closeLogin, login, register } = useAuth()
+  const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -200,7 +202,7 @@ export function LoginModal() {
                       Recordarme
                     </Label>
                   </div>
-                  <button type="button" className="text-sm text-primary hover:underline">
+                  <button type="button" className="text-sm text-primary hover:underline" onClick={() => { closeLogin(); router.push("/forgot-password") }}>
                     ¿Olvidaste tu contraseña?
                   </button>
                 </div>

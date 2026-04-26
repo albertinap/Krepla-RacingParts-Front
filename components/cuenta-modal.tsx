@@ -302,7 +302,7 @@ export default function CuentaModal({ open, onClose }: CuentaModalProps) {
             </Button>
           </SectionCard>
 
-          {/* Dirección de envío */}
+          {/* Dirección de envío 
           <SectionCard title="Dirección de envío">
             <Field label="Calle y número">
               <Input value={address} onChange={(e) => setAddress(e.target.value)} placeholder="Ej: Av. Colón 1234" className="bg-secondary" />
@@ -319,9 +319,9 @@ export default function CuentaModal({ open, onClose }: CuentaModalProps) {
             <Button onClick={handleAddressSave} disabled={addressLoading} className="w-full font-semibold">
               {addressLoading ? "Guardando..." : "GUARDAR DIRECCIÓN"}
             </Button>
-          </SectionCard>
+          </SectionCard>*/}
 
-          {/* Cambiar contraseña */}
+          {/* Cambiar contraseña 
           <SectionCard title="Cambiar contraseña">
             <Field label="Contraseña actual">
               <PasswordInput value={currentPass} onChange={setCurrentPass} placeholder="Tu contraseña actual" />
@@ -336,7 +336,7 @@ export default function CuentaModal({ open, onClose }: CuentaModalProps) {
             <Button onClick={handlePasswordChange} disabled={passLoading} className="w-full font-semibold">
               {passLoading ? "Cambiando..." : "CAMBIAR CONTRASEÑA"}
             </Button>
-          </SectionCard>
+          </SectionCard>*/}
         </div>
       </div>
 

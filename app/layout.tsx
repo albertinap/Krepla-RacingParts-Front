@@ -25,11 +25,11 @@ export const metadata: Metadata = {
   icons: {
     icon: [
       {
-        url: '/favicon-logo-light.png',
+        url: '/logo-simple.jpg',
         media: '(prefers-color-scheme: light)',
       },
       {
-        url: '/favicon-logo-dark.png',
+        url: '/logo-simple.jpg',
         media: '(prefers-color-scheme: dark)',
       },
       {
@@ -37,7 +37,7 @@ export const metadata: Metadata = {
         type: 'image/svg+xml',
       },
     ],
-    apple: '/apple-icon.png',
+    apple: '/logo-simple.png',
   },
 }
 

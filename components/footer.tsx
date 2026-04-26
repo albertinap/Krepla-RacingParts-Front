@@ -2,6 +2,7 @@
 
 import Link from "next/link"
 import Image from "next/image"
+import { Instagram, Mail, Phone } from "lucide-react"
 
 function SocialIconInstagram({ className }: { className?: string }) {
   return (
@@ -35,26 +36,16 @@ export function Footer() {
               <Image
                 src="/logo.png"
                 alt="Krepla Racing Parts"
-                width={150}
+                width={200}
                 height={50}
-                className="h-auto w-[150px] object-contain"
+                className="h-auto w-[200px] object-contain"
                 priority
               />
             </Link>
             </div>
             <p className="text-sm text-muted-foreground mb-4">
               Tu tienda online de repuestos y accesorios para motos. Distribuidores oficiales de las mejores marcas.
-            </p>
-            <div className="flex gap-4">              
-              <Link
-                href="https://www.instagram.com/kracingparts/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-muted-foreground hover:text-primary transition-colors"
-              >
-                <SocialIconInstagram className="h-5 w-5" />
-              </Link>              
-            </div>
+            </p>            
           </div>
 
           {/* Navigation */}
@@ -105,7 +96,23 @@ export function Footer() {
               <li>Tel: 2915132747</li>
               <li>Email: krepla.racingparts@gmail.com</li>              
             </ul>
+                      
+            <div className="flex items-left gap-3 mt-3">            
+              {/* Instagram */}
+              <a href="https://instagram.com/tuusuario" target="_blank">
+                <Instagram className="w-5 h-5" />
+              </a>
+              {/* WhatsApp */}
+              <a href="https://wa.me/5492915132747" target="_blank">
+                <Phone className="w-5 h-5" />
+              </a>
+              {/* Gmail */}
+              <a href="mailto:krepla.racingparts@gmail.com">
+                <Mail className="w-5 h-5" />
+              </a>
+            </div>
           </div>
+
         </div>
 
         <div className="mt-8 pt-8 border-t border-border text-center text-sm text-muted-foreground">
