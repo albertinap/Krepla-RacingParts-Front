@@ -25,8 +25,8 @@ let ratesCache: {
 
 // ─── Google Sheets client ────────────────────────────────────────────────────
 function getSheetsClient() {
-  const auth = new google.auth.GoogleAuth({
-    keyFile: path.join(process.cwd(), "secrets", "google-service-account.json"),
+  const auth = new google.auth.GoogleAuth({    
+    keyFile: path.join(process.cwd(), "secrets/google-service-account.json"),
     scopes: ["https://www.googleapis.com/auth/spreadsheets.readonly"],
   })
   return google.sheets({ version: "v4", auth })
