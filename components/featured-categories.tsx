@@ -6,21 +6,21 @@ import Link from "next/link"
 const featuredCategories = [
   {
     name: "Escapes",
-    image: "https://hondamaquina.com/imagenes/Como-funciona-el-tubo-de-escape-de-una-moto.jpg",
+    image: "/escapes.jpeg",
     href: "/productos/categoria/escapes",
     description: "Performance y sonido",
   },
   {
     name: "Competición y Potenciación",
-    image: "https://media.triumphmotorcycles.co.uk/image/upload/f_auto/q_auto:eco/sitecoremedialibrary/media-library/images/central%20marketing%20team/for%20the%20ride/racing/2024%20racing%20update/landing%20page/ftr-racing-world-supersport-card-1000x6509.png",
+    image: "/potenciacion.jpeg",
     href: "/productos/categoria/competicion-y-potenciacion",
-    description: "Seguridad certificada",
+    description: "Dale potencia a tu moto",
   },
   {
     name: "Transmisión",
-    image: "https://allmotorsgroup.com.ar/wp-content/uploads/2024/10/Untitled-design-2-jpg.webp",
+    image: "/transmisores.jpeg",
     href: "/productos/categoria/transmision",
-    description: "Dale potencia a tu moto",
+    description: "Dale potencia a la rueda",
   },
 ]
 

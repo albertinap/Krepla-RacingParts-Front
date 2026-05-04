@@ -93,7 +93,7 @@ function ProductCard({ product, rawVariants }: { product: any; rawVariants: any[
       {isLowStock && (
         <div className="absolute top-3 left-3 z-10">
           <Badge className="bg-amber-500 hover:bg-amber-500 text-white font-medium text-sm px-3 py-1">
-            ¡Últimas {inventoryQty} unidades!
+            {inventoryQty === 1 ? "¡Última unidad!" : `¡Últimas ${inventoryQty} unidades!`}
           </Badge>
         </div>
       )}

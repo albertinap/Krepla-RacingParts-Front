@@ -7,27 +7,18 @@ import { Button } from "@/components/ui/button"
 const slides = [
   {
     id: 1,
-    title: "DISTRIBUIDORES",
-    subtitle: "OFICIALES",
-    description: "VENTA POR MAYOR O MENOR",
-    brand: "BMB & WIRTZ RACING",
-    bgGradient: "from-black/80 via-black/50 to-transparent",
+    image: "/flyer-1.png",
+    alt: "Distribuidores oficiales BMB & Wirtz Racing",
   },
   {
     id: 2,
-    title: "NUEVOS",
-    subtitle: "ESCAPES",
-    description: "PERFORMANCE DE ALTA CALIDAD",
-    brand: "HASTA 30% OFF",
-    bgGradient: "from-primary/20 via-black/50 to-transparent",
+    image: "/flyer-2.jpeg",
+    alt: "Distribuidores oficiales BMB & Wirtz Racing",
   },
   {
     id: 3,
-    title: "CASCOS",
-    subtitle: "LS2 & PRO TORK",
-    description: "SEGURIDAD Y ESTILO",
-    brand: "ENVÍO GRATIS",
-    bgGradient: "from-black/80 via-black/50 to-transparent",
+    image: "/flyer-3.jpeg",
+    alt: "Distribuidores oficiales BMB & Wirtz Racing",
   },
 ]
 
@@ -57,27 +48,11 @@ export function HeroCarousel() {
             index === currentSlide ? "opacity-100" : "opacity-0"
           }`}
         >
-          {/* Background Pattern */}
-          <div className="absolute inset-0 bg-gradient-to-r from-black via-secondary to-black opacity-90" />
-          <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxwYXRoIGQ9Ik0zNiAxOGMzLjMxNCAwIDYgMi42ODYgNiA2cy0yLjY4NiA2LTYgNi02LTIuNjg2LTYtNiAyLjY4Ni02IDYtNiIgc3Ryb2tlPSIjMzMzIiBzdHJva2Utd2lkdGg9IjIiLz48L2c+PC9zdmc+')] opacity-5" />
-          
-          {/* Content */}
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="text-center px-4">
-              <p className="text-muted-foreground text-sm md:text-base mb-2">
-                {slide.description}
-              </p>
-              <h2 className="text-4xl sm:text-5xl md:text-7xl font-bold text-foreground mb-1" style={{ fontFamily: 'var(--font-oswald)' }}>
-                {slide.title}
-              </h2>
-              <h3 className="text-4xl sm:text-5xl md:text-7xl font-bold text-primary" style={{ fontFamily: 'var(--font-oswald)' }}>
-                {slide.subtitle}
-              </h3>
-              <p className="mt-4 text-lg md:text-xl text-foreground font-medium">
-                {slide.brand}
-              </p>
-            </div>
-          </div>
+          <img
+            src={slide.image}
+            alt={slide.alt}
+            className="absolute inset-0 w-full h-full object-cover"
+          />
         </div>
       ))}
 

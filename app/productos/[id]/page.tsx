@@ -217,9 +217,9 @@ export default function ProductPage({ params }: ProductPageProps) {
               )}
               {isLowStock && (
                 <div className="inline-block bg-amber-500 text-white text-sm font-bold px-6 py-2 rounded-md mb-2">
-                  ¡Últimas {inventoryQty} unidades disponibles!
+                  {inventoryQty === 1 ? "¡Última unidad!" : `¡Últimas ${inventoryQty} unidades!`}
                 </div>
-              )}
+              )}       
 
               {/* Precio */}
               <div className="space-y-3 py-4 border-y border-border">

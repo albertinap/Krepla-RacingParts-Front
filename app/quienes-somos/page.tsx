@@ -35,8 +35,9 @@ export default function QuienesSomosPage() {
               <span className="text-primary">para quienes viven las motos.</span>
             </h1>
             <p className="text-muted-foreground text-lg max-w-2xl leading-relaxed">
-              Krepla Racing Parts es una tienda especializada en repuestos, accesorios y equipamiento para motociclistas. 
-              Nacimos de la pasión por las dos ruedas y trabajamos para que cada moto ande como tiene que andar.
+            En Krepla Racing Parts, no solo despachamos productos; brindamos soluciones precisas para las necesidades específicas 
+            de tu moto de competición o calle. Gracias a un stock seleccionado de alta performance y un asesoramiento basado en el 
+            conocimiento real, construimos una relación de confianza y fidelidad.
             </p>
           </div>
         </div>
@@ -46,16 +47,17 @@ export default function QuienesSomosPage() {
           {/* Historia / valores */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
             <div>
-              <p className="text-[11px] font-semibold text-primary uppercase tracking-[3px] mb-4">Nuestra historia</p>
-              <h2 className="text-2xl font-bold text-foreground mb-4">Empezamos como clientes, seguimos como especialistas</h2>
+              <p className="text-[11px] font-semibold text-primary uppercase tracking-[3px] mb-4">Precisión que potencia tu máquina</p>
+              <h2 className="text-2xl font-bold text-foreground mb-4">Hecho para rendir al máximo</h2>
               <p className="text-muted-foreground leading-relaxed mb-4">
-                Krepla Racing Parts nació de la frustración de no encontrar repuestos de calidad a buen precio. 
-                Lo que empezó como una búsqueda personal se convirtió en una tienda con foco claro: 
-                productos que duran, marcas que responden, y atención de alguien que realmente sabe de motos.
+              Nuestra metodología de trabajo se centra en la precisión técnica. Nos esforzamos por superar tus expectativas en cada 
+              consulta, garantizando que cada pieza desde un escape hasta un kit de potenciación sea la ideal para mejorar el rendimiento 
+              de tu máquina. En Krepla Racing Parts, nos apasiona que tu experiencia de compra sea tan impecable como el funcionamiento de 
+              tu motor.
               </p>
               <p className="text-muted-foreground leading-relaxed">
-                Hoy ofrecemos una selección cuidada de las mejores marcas del mercado, 
-                con envíos a todo el país y atención personalizada para cada consulta.
+              Gracias por elegir a Krepla Racing Parts como tu aliado estratégico en la búsqueda de repuestos y accesorios de competición. 
+              Estamos acá para impulsarte a alcanzar el máximo potencial en cada pista y camino que tomes.
               </p>
             </div>
             <div className="grid grid-cols-2 gap-4">
@@ -75,7 +77,7 @@ export default function QuienesSomosPage() {
  
           {/* Marcas */}
           <div>
-            <p className="text-[11px] font-semibold text-primary uppercase tracking-[3px] mb-4">Marcas que trabajamos</p>
+            <p className="text-[11px] font-semibold text-primary uppercase tracking-[3px] mb-4">Algunas de las marcas que trabajamos</p>
             <h2 className="text-2xl font-bold text-foreground mb-8">Seleccionamos lo mejor del mercado</h2>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
               {BRANDS.map(brand => (

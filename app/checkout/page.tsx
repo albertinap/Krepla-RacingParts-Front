@@ -135,16 +135,18 @@ function TransferInfo() {
         ))}
       </div>
       <div className="bg-secondary/50 px-5 py-3 border-t border-border">
-        <p className="text-[13px] text-muted-foreground leading-relaxed">
-          Realizá la transferencia y envianos el comprobante por WhatsApp o email. Tu pedido se confirmará una vez acreditado el pago.
-        </p>
-        <p className="text-[12px] text-muted-foreground leading-relaxed">
-        Teléfono: 2915132747
-        </p>
-        <p className="text-[12px] text-muted-foreground leading-relaxed">
-        Email: krepla.racingparts@gmail.com
-        </p>
-      </div>
+      <p className="text-[16px] text-muted-foreground leading-relaxed">
+        Realizá la transferencia y envianos el comprobante por WhatsApp. Tu pedido se confirmará una vez acreditado el pago.
+      </p>      
+      <a
+        href="https://wa.me/5492915132747"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="inline-flex items-center gap-2 mt-3 bg-green-500 hover:bg-green-600 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
+      >
+        Enviar comprobante por WhatsApp →
+      </a>
+    </div>
     </div>
   )
 }
@@ -181,7 +183,7 @@ function OrderSummary({ subtotal, shippingCost, discount, total, paymentMethod }
         </div>
         {discount > 0 && (
           <div className="flex justify-between text-[15px]">
-            <span className="text-green-500">Descuento transferencia (-10%)</span>
+            <span className="text-green-500">Descuento {paymentMethod === "transfer" ? "transferencia" : "MercadoPago"} (-10%)</span>
             <span className="text-green-500">-{formatPrice(discount)}</span>
           </div>
         )}
@@ -254,7 +256,7 @@ export default function CheckoutPage() {
   const selectedShipping = shippingOptions.find(m => m.id === shippingMethod)
   const shippingCost = selectedShipping?.cost ?? 0
   const subtotal = cartTotal
-  const discount = paymentMethod === "transfer" ? subtotal * 0.10 : 0
+  const discount = (paymentMethod === "transfer" || paymentMethod === "mercadopago") ? subtotal * 0.10 : 0
   const total = subtotal + shippingCost - discount
   const isRetiroLocal = deliveryType === "retiro"
  
@@ -569,10 +571,13 @@ export default function CheckoutPage() {
                         <RadioGroupItem value="mercadopago" />
                         <div>
                           <p className="text-[15px] font-medium text-foreground">MercadoPago</p>
-                          <p className="text-sm text-muted-foreground">Débito y billetera MercadoPago</p>
+                          <p className="text-sm text-muted-foreground">Tarjetas prepagas y billetera MercadoPago</p>
                         </div>
+                      </div>                      
+                      <div className="flex flex-col items-end gap-1">
+                        <Image src="/mp-logo.png" alt="MercadoPago" width={120} height={24} className="object-contain" />
+                        <Badge className="bg-green-600 hover:bg-green-600 text-white">-10% descuento</Badge>
                       </div>
-                      <Image src="/mp-logo.png" alt="MercadoPago" width={120} height={24} className="object-contain" />
                     </label>
                   </RadioGroup>
  
@@ -624,7 +629,7 @@ export default function CheckoutPage() {
                     <div className="p-4 bg-secondary rounded-lg">
                       <p className="text-[13px] font-semibold text-primary uppercase tracking-wider mb-2">Pago</p>
                       <p className="text-[15px] text-muted-foreground">
-                        {paymentMethod === "transfer" ? "Transferencia bancaria (−10% de descuento)" : "MercadoPago"}
+                      {paymentMethod === "transfer" ? "Transferencia bancaria (−10% de descuento)" : "MercadoPago (−10% de descuento)"}
                       </p>
                     </div>
                   </div>
