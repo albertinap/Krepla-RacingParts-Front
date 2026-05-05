@@ -54,7 +54,7 @@ function ProductCard({ product }: { product: any }) {
   const hasVariants = variants.length > 1
 
   return (
-    <div className="bg-card rounded-lg border border-border overflow-hidden group hover:border-primary/50 transition-colors relative">
+    <div className="bg-card rounded-lg border border-border overflow-hidden group hover:border-primary/50 transition-colors relative flex flex-col">
       {isOutOfStock && (
         <div className="absolute top-3 left-3 z-10">
           <Badge variant="destructive" className="font-medium text-sm px-3 py-1">AGOTADO</Badge>
@@ -86,7 +86,7 @@ function ProductCard({ product }: { product: any }) {
         </div>
       </Link>
 
-      <div className="p-3 md:p-4">
+      <div className="p-3 md:p-4 flex flex-col flex-1">
         <h3 className="text-sm md:text-base font-medium text-foreground line-clamp-2 min-h-[2.5rem] md:min-h-[3rem]">
           {product.title}
         </h3>
@@ -118,33 +118,30 @@ function ProductCard({ product }: { product: any }) {
           </p>
         </div>
 
-        <Button
-          className={`w-full mt-3 text-sm ${
-            isOutOfStock
-              ? "bg-muted text-muted-foreground cursor-not-allowed"
-              : "bg-primary hover:bg-primary/90 text-primary-foreground"
-          }`}
-          onClick={() => {
-            if (isOutOfStock) return
-            addItem({
+        {isOutOfStock ? (
+          <a
+            href={`https://wa.me/5492915132747?text=${encodeURIComponent(`Hola! Quiero solicitar reposición de stock del producto: ${product.title}`)}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="w-full mt-auto text-sm inline-flex items-center justify-center bg-green-500 hover:bg-green-600 text-white font-medium px-4 py-2 rounded-lg transition-colors"
+          >
+            Solicitar stock
+          </a>
+          ) : (
+          <Button
+            className="w-full mt-auto text-sm bg-primary hover:bg-primary/90 text-primary-foreground"
+            onClick={() => addItem({
               id: product.id,
               name: product.title,
               price,
               image,
               variantId: variant?.id,
-            })
-          }}
-          disabled={isOutOfStock}
-        >
-          {isOutOfStock ? (
-            "Sin stock disponible"
-          ) : (
-            <>
-              <ShoppingCart className="h-4 w-4 mr-2" />
-              Agregar
-            </>
+            })}
+          >
+            <ShoppingCart className="h-4 w-4 mr-2" />
+            Agregar
+          </Button>
           )}
-        </Button>
       </div>
     </div>
   )

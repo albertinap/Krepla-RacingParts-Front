@@ -211,8 +211,24 @@ export default function ProductPage({ params }: ProductPageProps) {
                 </div>
               )}
               {isOutOfStock && (
-                <div className="inline-block bg-red-600 text-white text-sm font-bold px-6 py-2 rounded-md mb-2">
-                  AGOTADO - Sin stock disponible
+                <div className="space-y-3">
+                  <div className="inline-block bg-red-600 text-white text-sm font-bold px-6 py-2 rounded-md">
+                    AGOTADO - Sin stock disponible
+                  </div>
+                  <div className="p-4 bg-secondary rounded-lg border border-border">
+                    <p className="text-sm font-medium text-foreground mb-1">¿Querés este producto?</p>
+                    <p className="text-sm text-muted-foreground mb-3">
+                      Avisanos y lo conseguimos para vos en aproximadamente 4 días hábiles.
+                    </p>
+                    <a
+                      href={`https://wa.me/5492915132747?text=${encodeURIComponent(`Hola! Quiero solicitar reposición de stock del producto: ${product.title}`)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 bg-green-500 hover:bg-green-600 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
+                    >
+                      Solicitar reposición de stock
+                    </a>
+                  </div>
                 </div>
               )}
               {isLowStock && (

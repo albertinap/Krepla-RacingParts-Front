@@ -79,7 +79,7 @@ function ProductCard({ product, rawVariants }: { product: MappedProduct; rawVari
   }
 
   return (
-    <div className="bg-card rounded-lg border border-border overflow-hidden group hover:border-primary/50 transition-colors relative">
+    <div className="bg-card rounded-lg border border-border overflow-hidden group hover:border-primary/50 transition-colors relative flex flex-col">
       {isOutOfStock && (
         <div className="absolute top-3 left-3 z-10">
           <Badge variant="destructive" className="font-medium text-sm px-3 py-1">AGOTADO</Badge>
@@ -109,7 +109,7 @@ function ProductCard({ product, rawVariants }: { product: MappedProduct; rawVari
           />
         </div>
       </Link>
-      <div className="p-4">
+      <div className="p-4 flex flex-col flex-1">
         <p className="text-xs text-muted-foreground mb-1">{product.category}</p>
         <Link href={`/productos/${product.handle}`}>
           <h3 className="text-[15px] font-medium text-foreground line-clamp-2 hover:text-primary transition-colors leading-snug">
@@ -139,17 +139,24 @@ function ProductCard({ product, rawVariants }: { product: MappedProduct; rawVari
         <p className="text-sm text-green-500 font-medium mt-1">
           {formatPrice(transferPrice)} con -10% DESCUENTO en Transferencia
         </p>
-        <Button
-          className={`w-full mt-4 text-[15px] ${
-            isOutOfStock
-              ? "bg-muted text-muted-foreground cursor-not-allowed"
-              : "bg-primary hover:bg-primary/90 text-primary-foreground"
-          }`}
-          onClick={handleAddToCart}
-          disabled={isOutOfStock}
-        >
-          {isOutOfStock ? "Sin stock disponible" : "Agregar al carrito"}
-        </Button>
+        {isOutOfStock ? (
+          <a
+            href={`https://wa.me/5492915132747?text=${encodeURIComponent(`Hola! Quiero solicitar reposición de stock del producto: ${product.name}`)}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="w-full mt-auto text-[15px] inline-flex items-center justify-center bg-green-500 hover:bg-green-600 text-white font-medium px-4 py-2 rounded-lg transition-colors"
+          >
+            Solicitar stock
+          </a>
+          ) : (
+          <Button
+            className="w-full mt-auto text-[15px] bg-primary hover:bg-primary/90 text-primary-foreground"
+            onClick={handleAddToCart}
+          >
+            Agregar al carrito
+          </Button>
+          )
+        }
       </div>
     </div>
   )

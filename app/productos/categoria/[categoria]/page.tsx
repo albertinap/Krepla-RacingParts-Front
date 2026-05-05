@@ -84,7 +84,7 @@ function ProductCard({ product, rawVariants }: { product: any; rawVariants: any[
   const isLowStock = manageInventory && inventoryQty > 0 && inventoryQty <= 3
 
   return (
-    <div className="bg-card rounded-lg border border-border overflow-hidden group hover:border-primary/50 transition-colors relative">
+    <div className="bg-card rounded-lg border border-border overflow-hidden group hover:border-primary/50 transition-colors relative flex flex-col">
       {isOutOfStock && (
         <div className="absolute top-3 left-3 z-10">
           <Badge variant="destructive" className="font-medium text-sm px-3 py-1">AGOTADO</Badge>
@@ -116,7 +116,7 @@ function ProductCard({ product, rawVariants }: { product: any; rawVariants: any[
         </div>
       </Link>
 
-      <div className="p-4">
+      <div className="p-4 flex flex-col flex-1">
         <Link href={`/productos/${product.handle}`}>
           <h3 className="text-[15px] font-medium text-foreground line-clamp-2 hover:text-primary transition-colors leading-snug">
             {product.name}
@@ -144,33 +144,30 @@ function ProductCard({ product, rawVariants }: { product: any; rawVariants: any[
         <p className="text-xl font-bold text-foreground mt-2">{formatPrice(price)}</p>
         <p className="text-sm text-green-500 font-medium mt-1">
           {formatPrice(transferPrice)} con -10% DESCUENTO en Transferencia
-        </p>
-        {product.colors.length > 0 && (
-          <div className="flex gap-1 mt-2">
-            {product.colors?.map((color: string) => (
-              <span key={color} className="text-xs text-muted-foreground border border-border rounded px-2 py-0.5">
-                {color}
-              </span>
-            ))}
-          </div>
-        )}
+        </p>        
+        {isOutOfStock ? (
+        <a
+          href={`https://wa.me/5492915132747?text=${encodeURIComponent(`Hola! Quiero solicitar reposición de stock del producto: ${product.name}`)}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="w-full mt-auto text-[15px] inline-flex items-center justify-center bg-green-500 hover:bg-green-600 text-white font-medium px-4 py-2 rounded-lg transition-colors"
+        >
+          Solicitar stock
+        </a>
+        ) : (
         <Button
-          className={`w-full mt-4 text-[15px] ${
-            isOutOfStock
-              ? "bg-muted text-muted-foreground cursor-not-allowed"
-              : "bg-primary hover:bg-primary/90 text-primary-foreground"
-          }`}
-          onClick={() => !isOutOfStock && addItem({
+          className="w-full mt-auto text-[15px] bg-primary hover:bg-primary/90 text-primary-foreground"
+          onClick={() => addItem({
             id: product.id,
             name: product.name,
             price,
             image: product.image,
             variantId: selectedVariant?.id ?? product.variantId,
           })}
-          disabled={isOutOfStock}
         >
-          {isOutOfStock ? "Sin stock disponible" : "Agregar al carrito"}
+          Agregar al carrito
         </Button>
+        )}
       </div>
     </div>
   )
