@@ -1,20 +1,18 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { X, ChevronRight, Bike, Cog, Wrench, Shield, Sticker, Motorbike, Sparkles, Zap, Box } from "lucide-react"
+import { X, ChevronRight, Cog, Wrench, Motorbike, Zap, PlaneTakeoff, HandMetal, HandFist } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { medusa } from "@/lib/medusa"
 
 const categoryIcons: Record<string, any> = {
-  "Escapes": Bike,
+  "Escapes": Zap,
   "Transmisión": Cog,
   "Mantenimiento": Wrench,
-  "Guardabarros": Shield,
-  "Calcos": Sticker,
-  "Manubrios y Accesorios": Sparkles,
-  "Competición y Potenciación": Zap,
-  "Kit Plásticos": Box,
+  "Plásticos y Guardabarros": HandFist,
+  "Manubrios y Accesorios": HandMetal,
+  "Competición y Potenciación": PlaneTakeoff,
 }
 
 interface CategorySidebarProps {

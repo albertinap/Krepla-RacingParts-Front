@@ -1,17 +1,15 @@
 "use client"
 
-import { Bike, Cog, Wrench, Shield, Sticker, Sparkles, Zap, Box } from "lucide-react"
+import { Cog, Wrench, Zap, Box, PlaneTakeoff, HandFist, HandMetal } from "lucide-react"
 import Link from "next/link"
 
 const popularCategories = [
-  { name: "Escapes", icon: Bike, href: "/productos/categoria/escapes" },
+  { name: "Escapes", icon: Zap, href: "/productos/categoria/escapes" },
   { name: "Transmisión", icon: Cog, href: "/productos/categoria/transmision" },
   { name: "Mantenimiento", icon: Wrench, href: "/productos/categoria/mantenimiento" },
-  { name: "Guardabarros", icon: Shield, href: "/productos/categoria/guardabarros" },
-  { name: "Calcos", icon: Sticker, href: "/productos/categoria/kit-plasticos" },
-  { name: "Manubrios y Accesorios", icon: Sparkles, href: "/productos/categoria/manubrios-y-accesorios" },  
-  { name: "Competición y Potenciación", icon: Zap, href: "/productos/categoria/competicion-y-potenciacion" },
-  { name: "Kit Plásticos", icon: Box, href: "/productos/categoria/kit-plasticos" },
+  { name: "Plásticos y Guardabarros", icon: HandFist, href: "/productos/categoria/plasticos-y-guardabarros" },
+  { name: "Manubrios y Accesorios", icon: HandMetal, href: "/productos/categoria/manubrios-y-accesorios" },  
+  { name: "Competición y Potenciación", icon: PlaneTakeoff, href: "/productos/categoria/competicion-y-potenciacion" },
 ]
 
 export function PopularCategories() {
