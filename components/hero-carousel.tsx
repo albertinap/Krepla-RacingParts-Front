@@ -7,17 +7,17 @@ import { Button } from "@/components/ui/button"
 const slides = [
   {
     id: 1,
-    image: "/flyer-1.jpeg",
-    alt: "Distribuidores oficiales BMB & Wirtz Racing",
-  },
-  {
-    id: 2,
     image: "/flyer-2.jpeg",
     alt: "Distribuidores oficiales BMB & Wirtz Racing",
   },
   {
-    id: 3,
+    id: 2,
     image: "/flyer-3.jpeg",
+    alt: "Distribuidores oficiales BMB & Wirtz Racing",
+  },
+  {
+    id: 3,
+    image: "/flyer-1.jpeg",
     alt: "Distribuidores oficiales BMB & Wirtz Racing",
   },
 ]
